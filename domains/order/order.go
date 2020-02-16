@@ -17,10 +17,16 @@ func NewID(exchange, symbol, localID string) *ID {
 	}
 }
 
+// Request ..
+type Request struct {
+	norm.Norm
+	Symbol string
+	IsBuy     bool
+	OrderType string
+}
+
 // Order OrderObj
 type Order struct {
 	ID
-	norm.Norm
-	IsBuy     bool
-	OrderType string
+	Request
 }

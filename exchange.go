@@ -8,13 +8,13 @@ import (
 
 // Exchange 取引所のラッパーentity
 type Exchange interface {
-	CreateOrder(order order.Order) (*order.ID, error)
+	ExchangeName() string
+	CreateOrder(order order.Request) (*order.ID, error)
 	CancelOrder(orderID order.ID) error
 	CancelAllOrder(symbol string) error
 	ActiveOrders(symbol string) ([]order.Order, error)
-	Stocks(symbol string) ([]stock.Stock, error)
+	Stocks(symbol string) (stock.Stock, error)
 	InScheduledMaintenance() bool
-	Update(e execution.Execution) error
 }
 
 // Stream socketを起動し受け取る
