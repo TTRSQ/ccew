@@ -17,9 +17,8 @@ import (
 	"github.com/TTRSQ/ccew/exchange"
 	"github.com/TTRSQ/ccew/domains/execution"
 	"github.com/TTRSQ/ccew/domains/order"
-	"github.com/TTRSQ/ccew/domains/base/norm"
+	"github.com/TTRSQ/ccew/domains/base"
 	"github.com/TTRSQ/ccew/domains/stock"
-	utiltime "github.com/TTRSQ/bf-mm/util/time"
 )
 
 type bitflyer struct {
@@ -34,8 +33,8 @@ type key struct {
 	APISecKey string `json:"api_sec_key"`
 }
 
-// Get 自身を返す
-func Get() exchange.Exchange {
+// New return exchange obj.
+func New() exchange.Exchange {
 	bf := bitflyer{}
 
 	bytes, err := ioutil.ReadFile("../adopter/apiClient/bitflyer/key.json")
@@ -49,8 +48,6 @@ func Get() exchange.Exchange {
 	bf.host = "api.bitflyer.com"
 	bf.apiKey = bfKey.APIKey
 	bf.apiSecKey = bfKey.APISecKey
-
-	log.Println("exchange init with " + bf.name)
 
 	return &bf
 }
@@ -152,14 +149,13 @@ func (bf *bitflyer) ActiveOrders(symbol string) ([]order.Order, error) {
 	for _, data := range resData {
 		//log.Printf("%+v\n", data)
 		ret = append(ret, order.Order{
-			Symbol: data.ProductCode,
-			Node: node.Node{
-				ID:    order.ID{ExchangeName: bf.name, LocalID: data.ChildOrderAcceptanceID},
+			ID:    order.NewID(bf.name, data.ProductCode, data.ChildOrderAcceptanceID),
+			IsBuy: data.Side == "BUY",
+			Type:  data.ChildOrderType,
+			Norm: base.Norm{
 				Price: float64(data.Price),
 				Size:  data.Size,
 			},
-			IsBuy: data.Side == "BUY",
-			Type:  data.ChildOrderType,
 		})
 	}
 
@@ -206,14 +202,14 @@ func (bf *bitflyer) Stocks(symbol string) ([]stock.Stock, error) {
 	return ret, nil
 }
 
-func (bf *bitflyer) InScheduledMaintenance() bool {
-	jst := utiltime.Jst()
-	// 355 <= time <= 415で落とす
-	from := 355
-	to := 415
-	now := jst.Hour()*100 + jst.Minute()
-	return from <= now && now <= to
-}
+// func (bf *bitflyer) InScheduledMaintenance() bool {
+// 	jst := utiltime.Jst()
+// 	// 355 <= time <= 415で落とす
+// 	from := 355
+// 	to := 415
+// 	now := jst.Hour()*100 + jst.Minute()
+// 	return from <= now && now <= to
+// }
 
 func (bf *bitflyer) getRequest(path string, param interface{}) ([]byte, error) {
 	// jsonをガリガリする
