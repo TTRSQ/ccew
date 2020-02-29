@@ -16,3 +16,6 @@
 
 # local file
 .DS_Store
+
+# api key file
+key.json

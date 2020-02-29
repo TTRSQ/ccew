@@ -1,7 +1,7 @@
 package order
 
 import (
-	"github.com/TTRSQ/ccew/domains/base/norm"
+	"github.com/TTRSQ/ccew/domains/base"
 	"github.com/TTRSQ/ccew/domains/order/id"
 )
 
@@ -9,8 +9,8 @@ import (
 type ID id.ID
 
 // NewID .. make id obj.
-func NewID(exchange, symbol, localID string) *ID {
-	return &ID{
+func NewID(exchange, symbol, localID string) ID {
+	return ID{
 		ExchangeName: exchange,
 		Symbol:       symbol,
 		LocalID:      localID,
@@ -19,7 +19,7 @@ func NewID(exchange, symbol, localID string) *ID {
 
 // Request ..
 type Request struct {
-	norm.Norm
+	base.Norm
 	Symbol string
 	IsBuy     bool
 	OrderType string

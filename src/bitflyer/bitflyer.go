@@ -13,9 +13,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
-	"github.com/TTRSQ/ccew/exchange"
-	"github.com/TTRSQ/ccew/domains/execution"
+	"github.com/TTRSQ/ccew/interface/exchange"
 	"github.com/TTRSQ/ccew/domains/order"
 	"github.com/TTRSQ/ccew/domains/base"
 	"github.com/TTRSQ/ccew/domains/stock"
@@ -37,7 +35,7 @@ type key struct {
 func New() exchange.Exchange {
 	bf := bitflyer{}
 
-	bytes, err := ioutil.ReadFile("../adopter/apiClient/bitflyer/key.json")
+	bytes, err := ioutil.ReadFile("src/bitflyer/key.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,7 +50,11 @@ func New() exchange.Exchange {
 	return &bf
 }
 
-func (bf *bitflyer) CreateOrder(o order.Request) (order.ID, error) {
+func (bf *bitflyer) ExchangeName() string {
+	return bf.name
+}
+
+func (bf *bitflyer) CreateOrder(o order.Request) (*order.ID, error) {
 	// リクエスト
 	type Req struct {
 		ProductCode    string  `json:"product_code"`
@@ -65,7 +67,7 @@ func (bf *bitflyer) CreateOrder(o order.Request) (order.ID, error) {
 	}
 	res, _ := bf.postRequest("/v1/me/sendchildorder", Req{
 		ProductCode:    o.Symbol,
-		ChildOrderType: o.Type,
+		ChildOrderType: o.OrderType,
 		Side:           map[bool]string{true: "BUY", false: "SELL"}[o.IsBuy],
 		Price:          int(o.Price),
 		Size:           o.Size,
@@ -81,21 +83,21 @@ func (bf *bitflyer) CreateOrder(o order.Request) (order.ID, error) {
 	resData := Res{}
 	json.Unmarshal(res, &resData)
 	if resData.ErrorMessage != "" {
-		return order.ID{}, errors.New(resData.ErrorMessage)
+		return nil, errors.New(resData.ErrorMessage)
 	}
 
-	return order.ID{ExchangeName: bf.name, LocalID: resData.ID}, nil
+	return &order.ID{ExchangeName: bf.name, LocalID: resData.ID}, nil
 }
 
-func (bf *bitflyer) CancelOrder(id order.ID, symbol string) error {
+func (bf *bitflyer) CancelOrder(id order.ID) error {
 	type Req struct {
 		ProductCode            string `json:"product_code"`
 		ChildOrderAcceptanceID string `json:"child_order_acceptance_id"`
 	}
 
 	_, err := bf.postRequest("/v1/me/cancelchildorder", Req{
-		ProductCode:            symbol,
-		ChildOrderAcceptanceID: order.LocalID,
+		ProductCode:            id.Symbol,
+		ChildOrderAcceptanceID: id.LocalID,
 	})
 	return err
 }
@@ -150,19 +152,20 @@ func (bf *bitflyer) ActiveOrders(symbol string) ([]order.Order, error) {
 		//log.Printf("%+v\n", data)
 		ret = append(ret, order.Order{
 			ID:    order.NewID(bf.name, data.ProductCode, data.ChildOrderAcceptanceID),
-			IsBuy: data.Side == "BUY",
-			Type:  data.ChildOrderType,
-			Norm: base.Norm{
-				Price: float64(data.Price),
-				Size:  data.Size,
+			Request: order.Request{
+				IsBuy: data.Side == "BUY",
+				OrderType:  data.ChildOrderType,
+				Norm: base.Norm{
+					Price: float64(data.Price),
+					Size:  data.Size,
+				},
 			},
 		})
 	}
-
 	return ret, nil
 }
 
-func (bf *bitflyer) Stocks(symbol string) ([]stock.Stock, error) {
+func (bf *bitflyer) Stocks(symbol string) (stock.Stock, error) {
 	type Req struct {
 		Symbol string `json:"product_code"`
 	}
@@ -188,28 +191,24 @@ func (bf *bitflyer) Stocks(symbol string) ([]stock.Stock, error) {
 	json.Unmarshal(res, &resData)
 
 	// 返却値の作成
-	ret := []stock.Stock{}
+	ret := stock.Stock{Symbol: symbol}
 	for _, data := range resData {
 		//log.Printf("%+v\n", data)
-		ret = append(ret, stock.Stock{
-			Symbol: data.ProductCode,
-			IsBuy:  data.Side == "BUY",
-			Price:  data.Price,
-			Size:   data.Size,
-		})
+		ret.Size += data.Size
 	}
 
 	return ret, nil
 }
 
-// func (bf *bitflyer) InScheduledMaintenance() bool {
-// 	jst := utiltime.Jst()
-// 	// 355 <= time <= 415で落とす
-// 	from := 355
-// 	to := 415
-// 	now := jst.Hour()*100 + jst.Minute()
-// 	return from <= now && now <= to
-// }
+func (bf *bitflyer) InScheduledMaintenance() bool {
+	// jst := utiltime.Jst()
+	// // 355 <= time <= 415で落とす
+	// from := 355
+	// to := 415
+	// now := jst.Hour()*100 + jst.Minute()
+	// return from <= now && now <= to
+	return true
+}
 
 func (bf *bitflyer) getRequest(path string, param interface{}) ([]byte, error) {
 	// jsonをガリガリする
