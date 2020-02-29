@@ -13,10 +13,11 @@ import (
 	"net/url"
 	"strings"
 	"time"
-	"github.com/TTRSQ/ccew/interface/exchange"
-	"github.com/TTRSQ/ccew/domains/order"
+
 	"github.com/TTRSQ/ccew/domains/base"
+	"github.com/TTRSQ/ccew/domains/order"
 	"github.com/TTRSQ/ccew/domains/stock"
+	"github.com/TTRSQ/ccew/interface/exchange"
 )
 
 type bitflyer struct {
@@ -151,10 +152,10 @@ func (bf *bitflyer) ActiveOrders(symbol string) ([]order.Order, error) {
 	for _, data := range resData {
 		//log.Printf("%+v\n", data)
 		ret = append(ret, order.Order{
-			ID:    order.NewID(bf.name, data.ProductCode, data.ChildOrderAcceptanceID),
+			ID: order.NewID(bf.name, data.ProductCode, data.ChildOrderAcceptanceID),
 			Request: order.Request{
-				IsBuy: data.Side == "BUY",
-				OrderType:  data.ChildOrderType,
+				IsBuy:     data.Side == "BUY",
+				OrderType: data.ChildOrderType,
 				Norm: base.Norm{
 					Price: float64(data.Price),
 					Size:  data.Size,
@@ -286,4 +287,3 @@ func (bf *bitflyer) request(req *http.Request) ([]byte, error) {
 
 	return body, err
 }
-

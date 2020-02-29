@@ -20,7 +20,7 @@ func NewID(exchange, symbol, localID string) ID {
 // Request ..
 type Request struct {
 	base.Norm
-	Symbol string
+	Symbol    string
 	IsBuy     bool
 	OrderType string
 }

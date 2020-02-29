@@ -1,9 +1,10 @@
 package ccew
 
 import (
+	"errors"
+
 	"github.com/TTRSQ/ccew/interface/exchange"
 	"github.com/TTRSQ/ccew/src/bitflyer"
-	"errors"
 )
 
 // this is factory of ccew.
