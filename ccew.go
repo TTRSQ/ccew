@@ -12,7 +12,7 @@ import (
 // New .. get exchange wrapper.
 func New(exchangeName string) (exchange.Exchange, error) {
 	if exchangeName == "bitflyer" {
-		return bitflyer.New(), nil
+		return bitflyer.New("src/bitflyer/key.json"), nil
 	}
 	return nil, errors.New("exchange name:" + exchangeName + "not found.")
 }

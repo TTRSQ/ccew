@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -33,10 +34,10 @@ type key struct {
 }
 
 // New return exchange obj.
-func New() exchange.Exchange {
+func New(jsonKeyPath string) exchange.Exchange {
 	bf := bitflyer{}
 
-	bytes, err := ioutil.ReadFile("src/bitflyer/key.json")
+	bytes, err := ioutil.ReadFile(jsonKeyPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -194,7 +195,6 @@ func (bf *bitflyer) Stocks(symbol string) (stock.Stock, error) {
 	// 返却値の作成
 	ret := stock.Stock{Symbol: symbol}
 	for _, data := range resData {
-		//log.Printf("%+v\n", data)
 		ret.Size += data.Size
 	}
 
@@ -223,7 +223,7 @@ func (bf *bitflyer) getRequest(path string, param interface{}) ([]byte, error) {
 	}
 
 	uri := url.URL{Scheme: "https", Host: bf.host, Path: path, RawQuery: uparm.Encode()}
-	timestamp := string(time.Now().Unix())
+	timestamp := fmt.Sprintf("%d", time.Now().Unix())
 	req, _ := http.NewRequest(
 		"GET",
 		uri.String(),
@@ -243,7 +243,7 @@ func (bf *bitflyer) getRequest(path string, param interface{}) ([]byte, error) {
 
 func (bf *bitflyer) postRequest(path string, param interface{}) ([]byte, error) {
 	url := url.URL{Scheme: "https", Host: bf.host, Path: path}
-	timestamp := string(time.Now().Unix())
+	timestamp := fmt.Sprintf("%d", time.Now().Unix())
 	jsonParam, _ := json.Marshal(param)
 	req, _ := http.NewRequest(
 		"POST",
