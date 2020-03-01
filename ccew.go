@@ -10,9 +10,9 @@ import (
 // this is factory of ccew.
 
 // New .. get exchange wrapper.
-func New(exchangeName string) (exchange.Exchange, error) {
+func New(exchangeName string, key exchange.Key) (exchange.Exchange, error) {
 	if exchangeName == "bitflyer" {
-		return bitflyer.New("src/bitflyer/key.json"), nil
+		return bitflyer.New(key)
 	}
 	return nil, errors.New("exchange name:" + exchangeName + "not found.")
 }

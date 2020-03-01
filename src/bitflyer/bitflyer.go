@@ -28,28 +28,19 @@ type bitflyer struct {
 	name      string
 }
 
-type key struct {
-	APIKey    string `json:"api_key"`
-	APISecKey string `json:"api_sec_key"`
-}
-
 // New return exchange obj.
-func New(jsonKeyPath string) exchange.Exchange {
+func New(key exchange.Key) (exchange.Exchange, error) {
 	bf := bitflyer{}
-
-	bytes, err := ioutil.ReadFile(jsonKeyPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	bfKey := key{}
-	json.Unmarshal(bytes, &bfKey)
-
 	bf.name = "bitflyer"
 	bf.host = "api.bitflyer.com"
-	bf.apiKey = bfKey.APIKey
-	bf.apiSecKey = bfKey.APISecKey
 
-	return &bf
+	if key.APIKey == "" || key.APISecKey == "" {
+		return nil, errors.New("APIKey and APISecKey Required")
+	}
+	bf.apiKey = key.APIKey
+	bf.apiSecKey = key.APISecKey
+
+	return &bf, nil
 }
 
 func (bf *bitflyer) ExchangeName() string {

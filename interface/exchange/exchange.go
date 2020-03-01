@@ -6,15 +6,24 @@ import (
 	"github.com/TTRSQ/ccew/domains/stock"
 )
 
+// Key .. key data for use private apis.
+type Key struct {
+	APIKey    string
+	APISecKey string
+}
+
 // Exchange 取引所のラッパーentity
 type Exchange interface {
+	// public
 	ExchangeName() string
+	InScheduledMaintenance() bool
+
+	// private
 	CreateOrder(order order.Request) (*order.ID, error)
 	CancelOrder(orderID order.ID) error
 	CancelAllOrder(symbol string) error
 	ActiveOrders(symbol string) ([]order.Order, error)
 	Stocks(symbol string) (stock.Stock, error)
-	InScheduledMaintenance() bool
 }
 
 // Stream socketを起動し受け取る
