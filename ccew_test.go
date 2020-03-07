@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"testing"
-
-	"github.com/TTRSQ/ccew/interface/exchange"
 )
 
 func TestNewBitflyer(t *testing.T) {
@@ -24,7 +22,7 @@ func TestNewBitflyer(t *testing.T) {
 	}
 	json.Unmarshal(bytes, &bfKey)
 
-	bf, err := New(name, exchange.Key{
+	bf, err := New(name, Key{
 		APIKey:    bfKey.APIKey,
 		APISecKey: bfKey.APISecKey,
 	})
