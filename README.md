@@ -1,2 +1,40 @@
 # ccew
 Crypto Currency Exchange Wrapper for Go.
+
+# Usage
+```
+import (
+	"fmt"
+	"time"
+
+	"github.com/TTRSQ/ccew"
+)
+
+func main() {
+	bfClient, _ := ccew.New("bitflyer", ccew.ExchangeKey{
+		APIKey:    "your_api_key",
+		APISecKey: "your_api_sec_key",
+	})
+
+	// create order
+	orderID, _ := bfClient.CreateOrder(
+		950000, 0.01, true,
+		bfClient.Symbols().FxBtcJpy,
+		bfClient.OrderTypes().Limit,
+	)
+	fmt.Printf("%+v\n", orderID)
+
+	// wait for server processing.
+	time.Sleep(time.Second * 2)
+
+	// get my order
+	orders, _ := bfClient.ActiveOrders(bfClient.Symbols().FxBtcJpy)
+	fmt.Printf("%+v\n", orders)
+
+	// cancel order
+	_ = bfClient.CancelOrder(
+		bfClient.Symbols().FxBtcJpy,
+		orderID.LocalID, // hoge
+	)
+}
+```
