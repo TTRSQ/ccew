@@ -22,7 +22,7 @@ func TestNewBitflyer(t *testing.T) {
 	}
 	json.Unmarshal(bytes, &bfKey)
 
-	bf, err := New(name, Key{
+	bf, err := New(name, ExchangeKey{
 		APIKey:    bfKey.APIKey,
 		APISecKey: bfKey.APISecKey,
 	})
