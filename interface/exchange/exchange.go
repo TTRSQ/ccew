@@ -12,15 +12,29 @@ type Key struct {
 	APISecKey string
 }
 
+type OrderTypes struct {
+	Market string
+	Limit  string
+}
+
+type Symbols struct {
+	BtcJpy   string
+	FxBtcJpy string
+}
+
 // Exchange 取引所のラッパーentity
 type Exchange interface {
+	// const
+	OrderTypes() OrderTypes
+	Symbols() Symbols
+
 	// public
 	ExchangeName() string
 	InScheduledMaintenance() bool
 
 	// private
-	CreateOrder(order order.Request) (*order.ID, error)
-	CancelOrder(orderID order.ID) error
+	CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error)
+	CancelOrder(symbol, localID string) error
 	CancelAllOrder(symbol string) error
 	ActiveOrders(symbol string) ([]order.Order, error)
 	Stocks(symbol string) (stock.Stock, error)

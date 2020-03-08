@@ -47,7 +47,21 @@ func (bf *bitflyer) ExchangeName() string {
 	return bf.name
 }
 
-func (bf *bitflyer) CreateOrder(o order.Request) (*order.ID, error) {
+func (bf *bitflyer) OrderTypes() exchange.OrderTypes {
+	return exchange.OrderTypes{
+		Limit:  "LIMIT",
+		Market: "MARKET",
+	}
+}
+
+func (bf *bitflyer) Symbols() exchange.Symbols {
+	return exchange.Symbols{
+		BtcJpy:   "BTC_JPY",
+		FxBtcJpy: "FX_BTC_JPY",
+	}
+}
+
+func (bf *bitflyer) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error) {
 	// リクエスト
 	type Req struct {
 		ProductCode    string  `json:"product_code"`
@@ -59,11 +73,11 @@ func (bf *bitflyer) CreateOrder(o order.Request) (*order.ID, error) {
 		TimeInForce    string  `json:"time_in_force"`
 	}
 	res, _ := bf.postRequest("/v1/me/sendchildorder", Req{
-		ProductCode:    o.Symbol,
-		ChildOrderType: o.OrderType,
-		Side:           map[bool]string{true: "BUY", false: "SELL"}[o.IsBuy],
-		Price:          int(o.Price),
-		Size:           o.Size,
+		ProductCode:    symbol,
+		ChildOrderType: orderType,
+		Side:           map[bool]string{true: "BUY", false: "SELL"}[isBuy],
+		Price:          int(price),
+		Size:           size,
 		MinuteToExpire: 10000,
 		TimeInForce:    "GTC",
 	})
@@ -82,15 +96,15 @@ func (bf *bitflyer) CreateOrder(o order.Request) (*order.ID, error) {
 	return &order.ID{ExchangeName: bf.name, LocalID: resData.ID}, nil
 }
 
-func (bf *bitflyer) CancelOrder(id order.ID) error {
+func (bf *bitflyer) CancelOrder(symbol, localID string) error {
 	type Req struct {
 		ProductCode            string `json:"product_code"`
 		ChildOrderAcceptanceID string `json:"child_order_acceptance_id"`
 	}
 
 	_, err := bf.postRequest("/v1/me/cancelchildorder", Req{
-		ProductCode:            id.Symbol,
-		ChildOrderAcceptanceID: id.LocalID,
+		ProductCode:            symbol,
+		ChildOrderAcceptanceID: localID,
 	})
 	return err
 }
