@@ -34,7 +34,7 @@ func main() {
 	// cancel order
 	_ = bfClient.CancelOrder(
 		bfClient.Symbols().FxBtcJpy,
-		orderID.LocalID, // hoge
+		orderID.LocalID,
 	)
 }
 ```
