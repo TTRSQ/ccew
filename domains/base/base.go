@@ -6,8 +6,8 @@ type Norm struct {
 	Size  float64
 }
 
-// Currency information for identify currency
-type Currency struct {
-	ExchangeName string
-	Symbol       string
+// Balance of Currency
+type Balance struct {
+	CurrencyCode string
+	Size float64
 }

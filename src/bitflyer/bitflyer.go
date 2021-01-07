@@ -207,6 +207,33 @@ func (bf *bitflyer) Stocks(symbol string) (stock.Stock, error) {
 	return ret, nil
 }
 
+func (bf *bitflyer) Balance() ([]base.Balance, error) {
+	type Req struct {
+		Symbol string `json:"product_code"`
+	}
+	res, _ := bf.getRequest("/v1/me/getbalance", Req{})
+
+	// レスポンスの変換
+	type Res []struct {
+		CurrencyCode string  `json:"currency_code"`
+		Amount       float64 `json:"amount"`
+		Available    int     `json:"available"`
+	}
+	resData := Res{}
+	json.Unmarshal(res, &resData)
+
+	// 返却値の作成
+	ret := []base.Balance{}
+	for _, data := range resData {
+		ret = append(ret, base.Balance{
+			CurrencyCode: data.CurrencyCode,
+			Size:         data.Amount,
+		})
+	}
+
+	return ret, nil
+}
+
 func (bf *bitflyer) Boards(symbol string) (board.Board, error) {
 	type Req struct {
 		Symbol string `json:"product_code"`

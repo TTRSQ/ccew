@@ -1,6 +1,7 @@
 package exchange
 
 import (
+	"github.com/TTRSQ/ccew/domains/base"
 	"github.com/TTRSQ/ccew/domains/board"
 	"github.com/TTRSQ/ccew/domains/execution"
 	"github.com/TTRSQ/ccew/domains/order"
@@ -32,6 +33,7 @@ type Exchange interface {
 	// public
 	ExchangeName() string
 	InScheduledMaintenance() bool
+	Boards(symbol string) (board.Board, error)
 
 	// private
 	CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error)
@@ -39,7 +41,7 @@ type Exchange interface {
 	CancelAllOrder(symbol string) error
 	ActiveOrders(symbol string) ([]order.Order, error)
 	Stocks(symbol string) (stock.Stock, error)
-	Boards(symbol string) (board.Board, error)
+	Balance() ([]base.Balance, error)
 }
 
 // Stream socketを起動し受け取る
