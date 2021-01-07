@@ -11,6 +11,7 @@ import "github.com/TTRSQ/ccew/domains/base"
 type Board struct {
 	ExchangeName string
 	Symbol       string
+	MidPrice     float64
 	Asks         []base.Norm
 	Bids         []base.Norm
 }

@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/TTRSQ/ccew/domains/base"
+	"github.com/TTRSQ/ccew/domains/board"
 	"github.com/TTRSQ/ccew/domains/order"
 	"github.com/TTRSQ/ccew/domains/stock"
 	"github.com/TTRSQ/ccew/interface/exchange"
@@ -204,6 +205,53 @@ func (bf *bitflyer) Stocks(symbol string) (stock.Stock, error) {
 	}
 
 	return ret, nil
+}
+
+func (bf *bitflyer) Boards(symbol string) (board.Board, error) {
+	type Req struct {
+		Symbol string `json:"product_code"`
+	}
+	res, _ := bf.getRequest("/v1/getboard", Req{
+		Symbol: symbol,
+	})
+
+	// レスポンスの変換
+	type Res struct {
+		MidPrice float64 `json:"mid_price"`
+		Bids     []struct {
+			Price float64 `json:"price"`
+			Size  float64 `json:"size"`
+		} `json:"bids"`
+		Asks []struct {
+			Price float64 `json:"price"`
+			Size  float64 `json:"size"`
+		} `json:"asks"`
+	}
+	resData := Res{}
+	json.Unmarshal(res, &resData)
+
+	// 返却値の作成
+	asks := []base.Norm{}
+	for _, v := range resData.Asks {
+		asks = append(asks, base.Norm{
+			Price: v.Price,
+			Size:  v.Size,
+		})
+	}
+	bids := []base.Norm{}
+	for _, v := range resData.Bids {
+		bids = append(bids, base.Norm{
+			Price: v.Price,
+			Size:  v.Size,
+		})
+	}
+
+	return board.Board{
+		Symbol:   symbol,
+		MidPrice: resData.MidPrice,
+		Asks:     asks,
+		Bids:     bids,
+	}, nil
 }
 
 func (bf *bitflyer) InScheduledMaintenance() bool {

@@ -1,6 +1,7 @@
 package exchange
 
 import (
+	"github.com/TTRSQ/ccew/domains/board"
 	"github.com/TTRSQ/ccew/domains/execution"
 	"github.com/TTRSQ/ccew/domains/order"
 	"github.com/TTRSQ/ccew/domains/stock"
@@ -38,6 +39,7 @@ type Exchange interface {
 	CancelAllOrder(symbol string) error
 	ActiveOrders(symbol string) ([]order.Order, error)
 	Stocks(symbol string) (stock.Stock, error)
+	Boards(symbol string) (board.Board, error)
 }
 
 // Stream socketを起動し受け取る
