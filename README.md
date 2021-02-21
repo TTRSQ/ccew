@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	bfClient, _ := ccew.New("bitflyer", ccew.ExchangeKey{
+	bfClient, _ := ccew.Bitflyer(ccew.ExchangeKey{
 		APIKey:    "your_api_key",
 		APISecKey: "your_api_sec_key",
 	})
