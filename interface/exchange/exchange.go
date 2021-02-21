@@ -10,8 +10,9 @@ import (
 
 // Key .. key data for use private apis.
 type Key struct {
-	APIKey    string
-	APISecKey string
+	APIKey        string
+	APISecKey     string
+	SpecificParam map[string]interface{}
 }
 
 type OrderTypes struct {
@@ -28,7 +29,6 @@ type Symbols struct {
 type Exchange interface {
 	// const
 	OrderTypes() OrderTypes
-	Symbols() Symbols
 
 	// public
 	ExchangeName() string
