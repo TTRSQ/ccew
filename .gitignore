@@ -20,4 +20,4 @@
 # api key file
 key.json
 
-main
+main/main.go
