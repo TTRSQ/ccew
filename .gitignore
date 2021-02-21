@@ -19,3 +19,5 @@
 
 # api key file
 key.json
+
+main/main.go

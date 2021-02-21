@@ -1,0 +1,19 @@
+package main
+
+import (
+	"fmt"
+
+	"github.com/TTRSQ/ccew"
+)
+
+// to check private api
+func main() {
+	name := "ftx"
+
+	ftx, _ := ccew.New(name, ccew.ExchangeKey{
+		APIKey:    "your api key",
+		APISecKey: "your api sec key",
+	})
+
+	fmt.Println(ftx.ActiveOrders("ETH-PERP"))
+}

@@ -55,13 +55,6 @@ func (bf *bitflyer) OrderTypes() exchange.OrderTypes {
 	}
 }
 
-func (bf *bitflyer) Symbols() exchange.Symbols {
-	return exchange.Symbols{
-		BtcJpy:   "BTC_JPY",
-		FxBtcJpy: "FX_BTC_JPY",
-	}
-}
-
 func (bf *bitflyer) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error) {
 	// リクエスト
 	type Req struct {
@@ -288,7 +281,7 @@ func (bf *bitflyer) InScheduledMaintenance() bool {
 	// to := 415
 	// now := jst.Hour()*100 + jst.Minute()
 	// return from <= now && now <= to
-	return true
+	return false
 }
 
 func (bf *bitflyer) getRequest(path string, param interface{}) ([]byte, error) {
