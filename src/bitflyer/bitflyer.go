@@ -288,7 +288,7 @@ func (bf *bitflyer) InScheduledMaintenance() bool {
 	// to := 415
 	// now := jst.Hour()*100 + jst.Minute()
 	// return from <= now && now <= to
-	return true
+	return false
 }
 
 func (bf *bitflyer) getRequest(path string, param interface{}) ([]byte, error) {
