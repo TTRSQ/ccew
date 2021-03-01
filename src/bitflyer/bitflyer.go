@@ -194,7 +194,11 @@ func (bf *bitflyer) Stocks(symbol string) (stock.Stock, error) {
 	// 返却値の作成
 	ret := stock.Stock{Symbol: symbol}
 	for _, data := range resData {
-		ret.Size += data.Size
+		if data.Side == "SELL" {
+			ret.Size -= data.Size
+		} else {
+			ret.Size += data.Size
+		}
 	}
 
 	return ret, nil
