@@ -66,7 +66,7 @@ func (bf *bitflyer) CreateOrder(price, size float64, isBuy bool, symbol, orderTy
 		MinuteToExpire int     `json:"minute_to_expire"`
 		TimeInForce    string  `json:"time_in_force"`
 	}
-	res, _ := bf.postRequest("/v1/me/sendchildorder", Req{
+	res, err := bf.postRequest("/v1/me/sendchildorder", Req{
 		ProductCode:    symbol,
 		ChildOrderType: orderType,
 		Side:           map[bool]string{true: "BUY", false: "SELL"}[isBuy],
@@ -75,6 +75,9 @@ func (bf *bitflyer) CreateOrder(price, size float64, isBuy bool, symbol, orderTy
 		MinuteToExpire: 10000,
 		TimeInForce:    "GTC",
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	// レスポンスの変換
 	type Res struct {
@@ -120,10 +123,13 @@ func (bf *bitflyer) ActiveOrders(symbol string) ([]order.Order, error) {
 		ChildOrderState string `json:"child_order_state"`
 		Symbol          string `json:"product_code"`
 	}
-	res, _ := bf.getRequest("/v1/me/getchildorders", Req{
+	res, err := bf.getRequest("/v1/me/getchildorders", Req{
 		ChildOrderState: "ACTIVE",
 		Symbol:          symbol,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	// レスポンスの変換
 	type Res struct {
@@ -170,9 +176,12 @@ func (bf *bitflyer) Stocks(symbol string) (stock.Stock, error) {
 	type Req struct {
 		Symbol string `json:"product_code"`
 	}
-	res, _ := bf.getRequest("/v1/me/getpositions", Req{
+	res, err := bf.getRequest("/v1/me/getpositions", Req{
 		Symbol: symbol,
 	})
+	if err != nil {
+		return stock.Stock{}, err
+	}
 
 	// レスポンスの変換
 	type Res struct {
@@ -208,7 +217,10 @@ func (bf *bitflyer) Balance() ([]base.Balance, error) {
 	type Req struct {
 		Symbol string `json:"product_code"`
 	}
-	res, _ := bf.getRequest("/v1/me/getbalance", Req{})
+	res, err := bf.getRequest("/v1/me/getbalance", Req{})
+	if err != nil {
+		return nil, err
+	}
 
 	// レスポンスの変換
 	type Res []struct {
@@ -235,9 +247,12 @@ func (bf *bitflyer) Boards(symbol string) (board.Board, error) {
 	type Req struct {
 		Symbol string `json:"product_code"`
 	}
-	res, _ := bf.getRequest("/v1/getboard", Req{
+	res, err := bf.getRequest("/v1/getboard", Req{
 		Symbol: symbol,
 	})
+	if err != nil {
+		return board.Board{}, err
+	}
 
 	// レスポンスの変換
 	type Res struct {
