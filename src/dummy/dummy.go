@@ -66,10 +66,10 @@ func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType 
 	if executed {
 		if isBuy {
 			dm.stockSize += size
-			dm.cash -= dm.ltp * size
+			dm.cash -= price * size
 		} else {
 			dm.stockSize -= size
-			dm.cash += dm.ltp * size
+			dm.cash += price * size
 		}
 	}
 	return &order.ID{ExchangeName: dm.name, LocalID: localID}, nil
@@ -149,7 +149,7 @@ func (dm *dummy) updateExecution() {
 		if dm.ltp < v.Price {
 			executedIDs = append(executedIDs, v.ID)
 			dm.stockSize += v.Size
-			dm.cash -= dm.ltp * v.Size
+			dm.cash -= v.Price * v.Size
 		}
 	}
 
@@ -157,7 +157,7 @@ func (dm *dummy) updateExecution() {
 		if dm.ltp > v.Price {
 			executedIDs = append(executedIDs, v.ID)
 			dm.stockSize -= v.Size
-			dm.cash += dm.ltp * v.Size
+			dm.cash += v.Price * v.Size
 		}
 	}
 
