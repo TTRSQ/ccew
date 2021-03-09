@@ -183,18 +183,22 @@ func addOrder(isBuy bool, ele boardElm) bool {
 			executed = true
 		} else {
 			buyReqs = append(buyReqs, ele)
-			sort.Slice(buyReqs, func(i, j int) bool {
-				return buyReqs[i].Price > buyReqs[j].Price
-			})
+			if len(buyReqs) > 1 {
+				sort.Slice(buyReqs, func(i, j int) bool {
+					return buyReqs[i].Price > buyReqs[j].Price
+				})
+			}
 		}
 	} else {
 		if ltp > ele.Price {
 			executed = true
 		} else {
 			sellReqs = append(sellReqs, ele)
-			sort.Slice(sellReqs, func(i, j int) bool {
-				return sellReqs[i].Price < sellReqs[j].Price
-			})
+			if len(sellReqs) > 1 {
+				sort.Slice(sellReqs, func(i, j int) bool {
+					return sellReqs[i].Price < sellReqs[j].Price
+				})
+			}
 		}
 	}
 	return executed
