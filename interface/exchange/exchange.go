@@ -42,6 +42,9 @@ type Exchange interface {
 	ActiveOrders(symbol string) ([]order.Order, error)
 	Stocks(symbol string) (stock.Stock, error)
 	Balance() ([]base.Balance, error)
+
+	// for debug
+	UpdateLTP(ltp float64) error
 }
 
 // Stream socketを起動し受け取る

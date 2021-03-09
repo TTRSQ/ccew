@@ -492,3 +492,7 @@ func (lq *liquid) request(req *http.Request) ([]byte, error) {
 
 	return body, err
 }
+
+func (lq *liquid) UpdateLTP(lastTimePrice float64) error {
+	return errors.New("not supported.")
+}
