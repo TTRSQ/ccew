@@ -13,10 +13,14 @@ import (
 )
 
 type dummy struct {
-	apiKey    string
-	apiSecKey string
 	host      string
 	name      string
+	buyReqs   []boardElm
+	sellReqs  []boardElm
+	stockSize float64
+	incID     int
+	ltp       float64
+	cash      float64
 }
 
 type boardElm struct {
@@ -25,26 +29,13 @@ type boardElm struct {
 	Size  float64
 }
 
-var buyReqs []boardElm
-var sellReqs []boardElm
-var stockSize float64
-var incID int
-var ltp float64
-var cash float64
-
-func init() {
-	buyReqs = []boardElm{}
-	sellReqs = []boardElm{}
-	stockSize = 0
-	incID = 0
-	cash = 0
-}
-
 // New return exchange obj.
 func New(key exchange.Key) (exchange.Exchange, error) {
 	dm := dummy{}
 	dm.name = "dummy"
 	dm.host = "ttrsq.com"
+	dm.buyReqs = []boardElm{}
+	dm.sellReqs = []boardElm{}
 
 	return &dm, nil
 }
@@ -61,10 +52,10 @@ func (dm *dummy) OrderTypes() exchange.OrderTypes {
 }
 
 func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error) {
-	localID := incrementalID()
+	localID := dm.incrementalID()
 	executed := false
 	if orderType == "LIMIT" {
-		executed = addOrder(isBuy, boardElm{
+		executed = dm.addOrder(isBuy, boardElm{
 			ID:    localID,
 			Price: price,
 			Size:  size,
@@ -74,30 +65,30 @@ func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType 
 	}
 	if executed {
 		if isBuy {
-			stockSize += size
-			cash -= ltp * size
+			dm.stockSize += size
+			dm.cash -= dm.ltp * size
 		} else {
-			stockSize -= size
-			cash += ltp * size
+			dm.stockSize -= size
+			dm.cash += dm.ltp * size
 		}
 	}
 	return &order.ID{ExchangeName: dm.name, LocalID: localID}, nil
 }
 
 func (dm *dummy) CancelOrder(symbol, localID string) error {
-	cancelOrder(localID)
+	dm.cancelOrder(localID)
 	return nil
 }
 
 func (dm *dummy) CancelAllOrder(symbol string) error {
-	buyReqs = []boardElm{}
-	sellReqs = []boardElm{}
+	dm.buyReqs = []boardElm{}
+	dm.sellReqs = []boardElm{}
 	return nil
 }
 
 func (dm *dummy) ActiveOrders(symbol string) ([]order.Order, error) {
 	ret := []order.Order{}
-	for _, data := range buyReqs {
+	for _, data := range dm.buyReqs {
 		ret = append(ret, order.Order{
 			ID: order.ID{ExchangeName: dm.name, LocalID: data.ID},
 			Request: order.Request{
@@ -110,7 +101,7 @@ func (dm *dummy) ActiveOrders(symbol string) ([]order.Order, error) {
 			},
 		})
 	}
-	for _, data := range sellReqs {
+	for _, data := range dm.sellReqs {
 		ret = append(ret, order.Order{
 			ID: order.ID{ExchangeName: dm.name, LocalID: data.ID},
 			Request: order.Request{
@@ -127,13 +118,13 @@ func (dm *dummy) ActiveOrders(symbol string) ([]order.Order, error) {
 }
 
 func (dm *dummy) Stocks(symbol string) (stock.Stock, error) {
-	return stock.Stock{Symbol: symbol, Size: stockSize}, nil
+	return stock.Stock{Symbol: symbol, Size: dm.stockSize}, nil
 }
 
 func (dm *dummy) Balance() ([]base.Balance, error) {
 	ret := []base.Balance{{
 		CurrencyCode: "fiat",
-		Size:         cash + stockSize*ltp,
+		Size:         dm.cash + dm.stockSize*dm.ltp,
 	}}
 
 	return ret, nil
@@ -148,55 +139,55 @@ func (dm *dummy) InScheduledMaintenance() bool {
 }
 
 func (dm *dummy) UpdateLTP(lastTimePrice float64) error {
-	ltp = lastTimePrice
+	dm.ltp = lastTimePrice
 	return nil
 }
 
-func updateExecution() {
+func (dm *dummy) updateExecution() {
 	executedIDs := []string{}
-	for _, v := range buyReqs {
-		if ltp < v.Price {
+	for _, v := range dm.buyReqs {
+		if dm.ltp < v.Price {
 			executedIDs = append(executedIDs, v.ID)
-			stockSize += v.Size
-			cash -= ltp * v.Size
+			dm.stockSize += v.Size
+			dm.cash -= dm.ltp * v.Size
 		}
 	}
 
-	for _, v := range sellReqs {
-		if ltp > v.Price {
+	for _, v := range dm.sellReqs {
+		if dm.ltp > v.Price {
 			executedIDs = append(executedIDs, v.ID)
-			stockSize -= v.Size
-			cash += ltp * v.Size
+			dm.stockSize -= v.Size
+			dm.cash += dm.ltp * v.Size
 		}
 	}
 
 	// 不要になったオーダー削除
 	for _, v := range executedIDs {
-		cancelOrder(v)
+		dm.cancelOrder(v)
 	}
 }
 
-func addOrder(isBuy bool, ele boardElm) bool {
+func (dm *dummy) addOrder(isBuy bool, ele boardElm) bool {
 	executed := false
 	if isBuy {
-		if ltp < ele.Price {
+		if dm.ltp < ele.Price {
 			executed = true
 		} else {
-			buyReqs = append(buyReqs, ele)
-			if len(buyReqs) > 1 {
-				sort.Slice(buyReqs, func(i, j int) bool {
-					return buyReqs[i].Price > buyReqs[j].Price
+			dm.buyReqs = append(dm.buyReqs, ele)
+			if len(dm.buyReqs) > 1 {
+				sort.Slice(dm.buyReqs, func(i, j int) bool {
+					return dm.buyReqs[i].Price > dm.buyReqs[j].Price
 				})
 			}
 		}
 	} else {
-		if ltp > ele.Price {
+		if dm.ltp > ele.Price {
 			executed = true
 		} else {
-			sellReqs = append(sellReqs, ele)
-			if len(sellReqs) > 1 {
-				sort.Slice(sellReqs, func(i, j int) bool {
-					return sellReqs[i].Price < sellReqs[j].Price
+			dm.sellReqs = append(dm.sellReqs, ele)
+			if len(dm.sellReqs) > 1 {
+				sort.Slice(dm.sellReqs, func(i, j int) bool {
+					return dm.sellReqs[i].Price < dm.sellReqs[j].Price
 				})
 			}
 		}
@@ -204,28 +195,28 @@ func addOrder(isBuy bool, ele boardElm) bool {
 	return executed
 }
 
-func cancelOrder(id string) {
+func (dm *dummy) cancelOrder(id string) {
 	newBuyReqs := []boardElm{}
 	newSellReqs := []boardElm{}
 
-	for _, v := range buyReqs {
+	for _, v := range dm.buyReqs {
 		if id != v.ID {
 			newBuyReqs = append(newBuyReqs, v)
 		}
 	}
 
-	for _, v := range sellReqs {
+	for _, v := range dm.sellReqs {
 		if id != v.ID {
 			newSellReqs = append(newSellReqs, v)
 		}
 	}
 
-	buyReqs = newBuyReqs
-	sellReqs = newSellReqs
+	dm.buyReqs = newBuyReqs
+	dm.sellReqs = newSellReqs
 }
 
-func incrementalID() string {
-	id := incID
-	incID++
+func (dm *dummy) incrementalID() string {
+	id := dm.incID
+	dm.incID++
 	return fmt.Sprint(id)
 }
