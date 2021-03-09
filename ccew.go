@@ -4,6 +4,7 @@ import (
 	"github.com/TTRSQ/ccew/interface/exchange"
 	"github.com/TTRSQ/ccew/src/bitflyer"
 	"github.com/TTRSQ/ccew/src/bybit"
+	"github.com/TTRSQ/ccew/src/dummy"
 	"github.com/TTRSQ/ccew/src/ftx"
 	"github.com/TTRSQ/ccew/src/liquid"
 )
@@ -31,4 +32,9 @@ func ByBit(key exchange.Key) (exchange.Exchange, error) {
 // Liquid .. no SpecificParam.
 func Liquid(key exchange.Key) (exchange.Exchange, error) {
 	return liquid.New(key)
+}
+
+// Dummy .. no SpecificParam.
+func Dummy(key exchange.Key) (exchange.Exchange, error) {
+	return dummy.New(key)
 }
