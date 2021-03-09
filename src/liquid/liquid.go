@@ -90,6 +90,7 @@ func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType
 		Side          string      `json:"side"`
 		Quantity      float64     `json:"quantity"`
 		Price         interface{} `json:"price"`
+		MarginType    string      `json:"margin_type"`
 	}
 	type Req struct {
 		Order o `json:"order"`
@@ -106,6 +107,7 @@ func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType
 			Price:         map[bool]interface{}{true: price, false: nil}[orderType == lq.OrderTypes().Limit],
 			Quantity:      size,
 			LeverageLevel: leverageLevel,
+			MarginType:    "isolated",
 		},
 	})
 	if err != nil {
