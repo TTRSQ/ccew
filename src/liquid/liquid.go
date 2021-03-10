@@ -105,12 +105,13 @@ func (lq *liquid) OrderTypes() exchange.OrderTypes {
 func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error) {
 	// リクエスト
 	type o struct {
-		LeverageLevel interface{} `json:"leverage_level"`
-		OrderType     string      `json:"order_type"`
-		ProductID     int         `json:"product_id"`
-		Side          string      `json:"side"`
-		Quantity      float64     `json:"quantity"`
-		Price         interface{} `json:"price"`
+		LeverageLevel  interface{} `json:"leverage_level"`
+		OrderType      string      `json:"order_type"`
+		ProductID      int         `json:"product_id"`
+		Side           string      `json:"side"`
+		Quantity       float64     `json:"quantity"`
+		Price          interface{} `json:"price"`
+		OrderDirection string      `json:"order_direction"`
 	}
 	type Req struct {
 		Order o `json:"order"`
@@ -121,12 +122,13 @@ func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType
 	}
 	res, err := lq.postRequest("/orders", &Req{
 		Order: o{
-			ProductID:     productIDMap[symbol],
-			OrderType:     orderType,
-			Side:          map[bool]string{true: "buy", false: "sell"}[isBuy],
-			Price:         map[bool]interface{}{true: price, false: nil}[orderType == lq.OrderTypes().Limit],
-			Quantity:      size,
-			LeverageLevel: leverageLevel,
+			ProductID:      productIDMap[symbol],
+			OrderType:      orderType,
+			Side:           map[bool]string{true: "buy", false: "sell"}[isBuy],
+			Price:          map[bool]interface{}{true: price, false: nil}[orderType == lq.OrderTypes().Limit],
+			Quantity:       size,
+			LeverageLevel:  leverageLevel,
+			OrderDirection: "netout",
 		},
 	})
 	if err != nil {
