@@ -22,11 +22,16 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
+type keyStruct struct {
+	id  string
+	sec string
+}
+
 type liquid struct {
-	apiKey    string
-	apiSecKey string
-	host      string
-	name      string
+	keys   []keyStruct
+	host   string
+	name   string
+	keyIdx int
 }
 
 var productIDMap map[string]int
@@ -64,8 +69,24 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 	if key.APIKey == "" || key.APISecKey == "" {
 		return nil, errors.New("APIKey and APISecKey Required")
 	}
-	lq.apiKey = key.APIKey
-	lq.apiSecKey = key.APISecKey
+	lq.keys = []keyStruct{
+		{
+			id:  key.APIKey,
+			sec: key.APISecKey,
+		},
+	}
+
+	// nonceError回避用のkeyを追加する
+	_, exist := key.SpecificParam["additional_keys"]
+	if exist {
+		additionalKeys := key.SpecificParam["additional_keys"].([][]string)
+		for i := range additionalKeys {
+			lq.keys = append(lq.keys, keyStruct{
+				id:  additionalKeys[i][0],
+				sec: additionalKeys[i][1],
+			})
+		}
+	}
 
 	return &lq, nil
 }
@@ -446,8 +467,9 @@ func structToQuery(data interface{}) string {
 }
 
 func (lq *liquid) makeSignature(path string) string {
+	key := lq.getKey()
 
-	mySigningKey := []byte(lq.apiSecKey)
+	mySigningKey := []byte(key.sec)
 
 	type MyCustomClaims struct {
 		Path    string `json:"path"`
@@ -462,7 +484,7 @@ func (lq *liquid) makeSignature(path string) string {
 	claims := MyCustomClaims{
 		path,
 		fmt.Sprintf("%d", nonce),
-		fmt.Sprintf("%s", lq.apiKey),
+		fmt.Sprintf("%s", key.id),
 		jwt.StandardClaims{},
 	}
 
@@ -470,6 +492,12 @@ func (lq *liquid) makeSignature(path string) string {
 	sig, _ := token.SignedString(mySigningKey)
 
 	return sig
+}
+
+func (lq *liquid) getKey() keyStruct {
+	idx := lq.keyIdx
+	lq.keyIdx = (lq.keyIdx + 1) % len(lq.keys)
+	return lq.keys[idx]
 }
 
 func (lq *liquid) request(req *http.Request) ([]byte, error) {

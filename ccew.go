@@ -19,7 +19,7 @@ func Bitflyer(key exchange.Key) (exchange.Exchange, error) {
 	return bitflyer.New(key)
 }
 
-// Ftx .. SpecificParam [FTX-SUBACCOUNT(string)]
+// Ftx .. SpecificParam FTX-SUBACCOUNT : string
 func Ftx(key exchange.Key) (exchange.Exchange, error) {
 	return ftx.New(key)
 }
@@ -29,7 +29,7 @@ func ByBit(key exchange.Key) (exchange.Exchange, error) {
 	return bybit.New(key)
 }
 
-// Liquid .. no SpecificParam.
+// Liquid .. SpecificParam additional_keys : [][]string{ [id, sec],[id, sec].. }
 func Liquid(key exchange.Key) (exchange.Exchange, error) {
 	return liquid.New(key)
 }
