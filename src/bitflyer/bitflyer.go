@@ -18,6 +18,7 @@ import (
 	"github.com/TTRSQ/ccew/domains/base"
 	"github.com/TTRSQ/ccew/domains/board"
 	"github.com/TTRSQ/ccew/domains/order"
+	"github.com/TTRSQ/ccew/domains/order/id"
 	"github.com/TTRSQ/ccew/domains/stock"
 	"github.com/TTRSQ/ccew/interface/exchange"
 )
@@ -55,7 +56,7 @@ func (bf *bitflyer) OrderTypes() exchange.OrderTypes {
 	}
 }
 
-func (bf *bitflyer) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error) {
+func (bf *bitflyer) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
 	// リクエスト
 	type Req struct {
 		ProductCode    string  `json:"product_code"`
@@ -90,7 +91,11 @@ func (bf *bitflyer) CreateOrder(price, size float64, isBuy bool, symbol, orderTy
 		return nil, errors.New(resData.ErrorMessage)
 	}
 
-	return &order.ID{ExchangeName: bf.name, LocalID: resData.ID}, nil
+	return &order.Responce{
+		ID: id.NewID(bf.name, symbol, resData.ID),
+		// 成り行きであればすべて約定する前提
+		FilledSize: 0.0,
+	}, nil
 }
 
 func (bf *bitflyer) CancelOrder(symbol, localID string) error {
@@ -158,7 +163,7 @@ func (bf *bitflyer) ActiveOrders(symbol string) ([]order.Order, error) {
 	for _, data := range resData {
 		//log.Printf("%+v\n", data)
 		ret = append(ret, order.Order{
-			ID: order.NewID(bf.name, data.ProductCode, data.ChildOrderAcceptanceID),
+			ID: id.NewID(bf.name, data.ProductCode, data.ChildOrderAcceptanceID),
 			Request: order.Request{
 				IsBuy:     data.Side == "BUY",
 				OrderType: data.ChildOrderType,

@@ -8,6 +8,7 @@ import (
 	"github.com/TTRSQ/ccew/domains/base"
 	"github.com/TTRSQ/ccew/domains/board"
 	"github.com/TTRSQ/ccew/domains/order"
+	"github.com/TTRSQ/ccew/domains/order/id"
 	"github.com/TTRSQ/ccew/domains/stock"
 	"github.com/TTRSQ/ccew/interface/exchange"
 )
@@ -51,7 +52,7 @@ func (dm *dummy) OrderTypes() exchange.OrderTypes {
 	}
 }
 
-func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error) {
+func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
 	localID := dm.incrementalID()
 	executed := false
 	if orderType == "LIMIT" {
@@ -72,7 +73,12 @@ func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType 
 			dm.cash += price * size
 		}
 	}
-	return &order.ID{ExchangeName: dm.name, LocalID: localID}, nil
+
+	return &order.Responce{
+		ID: id.NewID(dm.name, symbol, localID),
+		// TODO: using best ask, bid.
+		FilledSize: map[bool]float64{true: size, false: 0.0}[orderType == dm.OrderTypes().Market],
+	}, nil
 }
 
 func (dm *dummy) CancelOrder(symbol, localID string) error {
@@ -90,7 +96,7 @@ func (dm *dummy) ActiveOrders(symbol string) ([]order.Order, error) {
 	ret := []order.Order{}
 	for _, data := range dm.buyReqs {
 		ret = append(ret, order.Order{
-			ID: order.ID{ExchangeName: dm.name, LocalID: data.ID},
+			ID: id.NewID(dm.name, symbol, data.ID),
 			Request: order.Request{
 				IsBuy:     true,
 				OrderType: "LIMIT",
@@ -103,7 +109,7 @@ func (dm *dummy) ActiveOrders(symbol string) ([]order.Order, error) {
 	}
 	for _, data := range dm.sellReqs {
 		ret = append(ret, order.Order{
-			ID: order.ID{ExchangeName: dm.name, LocalID: data.ID},
+			ID: id.NewID(dm.name, symbol, data.ID),
 			Request: order.Request{
 				IsBuy:     false,
 				OrderType: "LIMIT",

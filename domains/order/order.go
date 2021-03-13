@@ -5,18 +5,6 @@ import (
 	"github.com/TTRSQ/ccew/domains/order/id"
 )
 
-// ID order id
-type ID id.ID
-
-// NewID .. make id obj.
-func NewID(exchange, symbol, localID string) ID {
-	return ID{
-		ExchangeName: exchange,
-		Symbol:       symbol,
-		LocalID:      localID,
-	}
-}
-
 // Request ..
 type Request struct {
 	base.Norm
@@ -25,8 +13,14 @@ type Request struct {
 	OrderType string
 }
 
+// Responce
+type Responce struct {
+	ID         id.ID
+	FilledSize float64
+}
+
 // Order OrderObj
 type Order struct {
-	ID
+	id.ID
 	Request
 }

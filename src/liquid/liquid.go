@@ -17,6 +17,7 @@ import (
 	"github.com/TTRSQ/ccew/domains/base"
 	"github.com/TTRSQ/ccew/domains/board"
 	"github.com/TTRSQ/ccew/domains/order"
+	"github.com/TTRSQ/ccew/domains/order/id"
 	"github.com/TTRSQ/ccew/domains/stock"
 	"github.com/TTRSQ/ccew/interface/exchange"
 	jwt "github.com/dgrijalva/jwt-go"
@@ -102,7 +103,7 @@ func (lq *liquid) OrderTypes() exchange.OrderTypes {
 	}
 }
 
-func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error) {
+func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
 	// リクエスト
 	type o struct {
 		LeverageLevel  interface{} `json:"leverage_level"`
@@ -165,8 +166,11 @@ func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType
 	if resData.ErrorMessage != "" {
 		return nil, errors.New(resData.ErrorMessage)
 	}
-
-	return &order.ID{ExchangeName: lq.name, LocalID: fmt.Sprint(resData.ID)}, nil
+	filledSize, _ := strconv.ParseFloat(resData.FilledQuantity, 64)
+	return &order.Responce{
+		ID:         id.NewID(lq.name, symbol, fmt.Sprint(resData.ID)),
+		FilledSize: filledSize,
+	}, nil
 }
 
 func (lq *liquid) CancelOrder(symbol, localID string) error {
@@ -230,7 +234,7 @@ func (lq *liquid) ActiveOrders(symbol string) ([]order.Order, error) {
 		price, _ := strconv.ParseFloat(data.Quantity, 64)
 		size, _ := strconv.ParseFloat(data.Quantity, 64)
 		ret = append(ret, order.Order{
-			ID: order.NewID(lq.name, data.CurrencyPairCode, fmt.Sprint(data.ID)),
+			ID: id.NewID(lq.name, data.CurrencyPairCode, fmt.Sprint(data.ID)),
 			Request: order.Request{
 				IsBuy:     data.Side == "buy",
 				OrderType: data.OrderType,

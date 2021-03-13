@@ -20,6 +20,7 @@ import (
 	"github.com/TTRSQ/ccew/domains/base"
 	"github.com/TTRSQ/ccew/domains/board"
 	"github.com/TTRSQ/ccew/domains/order"
+	"github.com/TTRSQ/ccew/domains/order/id"
 	"github.com/TTRSQ/ccew/domains/stock"
 	"github.com/TTRSQ/ccew/interface/exchange"
 )
@@ -55,7 +56,7 @@ func (bb *bybit) OrderTypes() exchange.OrderTypes {
 	}
 }
 
-func (bb *bybit) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error) {
+func (bb *bybit) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
 	type Req struct {
 		Side        string  `json:"side"`
 		Symbol      string  `json:"symbol"`
@@ -114,7 +115,10 @@ func (bb *bybit) CreateOrder(price, size float64, isBuy bool, symbol, orderType 
 	resData := Res{}
 	json.Unmarshal(res, &resData)
 
-	return &order.ID{ExchangeName: bb.name, LocalID: fmt.Sprint(resData.Result.OrderID)}, nil
+	return &order.Responce{
+		ID:         id.NewID(bb.name, symbol, fmt.Sprint(resData.Result.OrderID)),
+		FilledSize: size - float64(resData.Result.LeavesQty),
+	}, nil
 }
 
 func (bb *bybit) CancelOrder(symbol, localID string) error {
@@ -232,7 +236,7 @@ func (bb *bybit) ActiveOrders(symbol string) ([]order.Order, error) {
 		price, _ := strconv.ParseFloat(v.Price, 64)
 		size, _ := strconv.ParseFloat(v.Side, 64)
 		orders = append(orders, order.Order{
-			ID: order.NewID(bb.name, symbol, v.OrderID),
+			ID: id.NewID(bb.name, symbol, v.OrderID),
 			Request: order.Request{
 				Norm: base.Norm{
 					Price: price,

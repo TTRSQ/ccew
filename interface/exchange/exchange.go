@@ -36,7 +36,7 @@ type Exchange interface {
 	Boards(symbol string) (board.Board, error)
 
 	// private
-	CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error)
+	CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error)
 	CancelOrder(symbol, localID string) error
 	CancelAllOrder(symbol string) error
 	ActiveOrders(symbol string) ([]order.Order, error)

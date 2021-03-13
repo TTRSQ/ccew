@@ -18,6 +18,7 @@ import (
 	"github.com/TTRSQ/ccew/domains/base"
 	"github.com/TTRSQ/ccew/domains/board"
 	"github.com/TTRSQ/ccew/domains/order"
+	"github.com/TTRSQ/ccew/domains/order/id"
 	"github.com/TTRSQ/ccew/domains/stock"
 	"github.com/TTRSQ/ccew/interface/exchange"
 )
@@ -53,7 +54,7 @@ func (ftx *ftx) OrderTypes() exchange.OrderTypes {
 	}
 }
 
-func (ftx *ftx) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.ID, error) {
+func (ftx *ftx) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
 	// リクエスト
 	type Req struct {
 		Market string   `json:"market"`
@@ -81,7 +82,7 @@ func (ftx *ftx) CreateOrder(price, size float64, isBuy bool, symbol, orderType s
 		Success bool `json:"success"`
 		Result  struct {
 			CreatedAt     time.Time   `json:"createdAt"`
-			FilledSize    int         `json:"filledSize"`
+			FilledSize    float64     `json:"filledSize"`
 			Future        string      `json:"future"`
 			ID            int         `json:"id"`
 			Market        string      `json:"market"`
@@ -100,7 +101,10 @@ func (ftx *ftx) CreateOrder(price, size float64, isBuy bool, symbol, orderType s
 	resData := Res{}
 	json.Unmarshal(res, &resData)
 
-	return &order.ID{ExchangeName: ftx.name, LocalID: fmt.Sprint(resData.Result.ID)}, nil
+	return &order.Responce{
+		ID:         id.NewID(ftx.name, symbol, fmt.Sprint(resData.Result.ID)),
+		FilledSize: resData.Result.FilledSize,
+	}, nil
 }
 
 func (ftx *ftx) CancelOrder(symbol, localID string) error {
@@ -159,7 +163,7 @@ func (ftx *ftx) ActiveOrders(symbol string) ([]order.Order, error) {
 	for _, data := range resData.Result {
 		//log.Printf("%+v\n", data)
 		ret = append(ret, order.Order{
-			ID: order.NewID(ftx.name, data.Market, fmt.Sprint(data.ID)),
+			ID: id.NewID(ftx.name, data.Market, fmt.Sprint(data.ID)),
 			Request: order.Request{
 				IsBuy:     data.Side == "buy",
 				OrderType: data.Type,
