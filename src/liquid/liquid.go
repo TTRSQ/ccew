@@ -173,6 +173,71 @@ func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType
 	}, nil
 }
 
+func (lq *liquid) EditOrder(symbol, localID string, price, size float64) (*order.Order, error) {
+	// リクエスト
+	type editParam struct {
+		Quantity float64 `json:"quantity"`
+		Price    float64 `json:"price"`
+	}
+	type Req struct {
+		Order editParam `json:"order"`
+	}
+	res, err := lq.putRequest("/orders/"+localID, &Req{
+		Order: editParam{
+			Price:    price,
+			Quantity: size,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// レスポンスの変換
+	type Res struct {
+		ID                   int         `json:"id"`
+		OrderType            string      `json:"order_type"`
+		MarginType           interface{} `json:"margin_type"`
+		Quantity             string      `json:"quantity"`
+		DiscQuantity         string      `json:"disc_quantity"`
+		IcebergTotalQuantity string      `json:"iceberg_total_quantity"`
+		Side                 string      `json:"side"`
+		FilledQuantity       string      `json:"filled_quantity"`
+		Price                string      `json:"price"`
+		CreatedAt            int         `json:"created_at"`
+		UpdatedAt            int         `json:"updated_at"`
+		Status               string      `json:"status"`
+		LeverageLevel        int         `json:"leverage_level"`
+		SourceExchange       string      `json:"source_exchange"`
+		ProductID            int         `json:"product_id"`
+		ProductCode          string      `json:"product_code"`
+		FundingCurrency      string      `json:"funding_currency"`
+		CurrencyPairCode     string      `json:"currency_pair_code"`
+		ClientOrderID        interface{} `json:"client_order_id"`
+		ErrorMessage         string      `json:"message"`
+		Errors               interface{} `json:"errors"`
+	}
+	resData := Res{}
+	json.Unmarshal(res, &resData)
+	if resData.ErrorMessage != "" {
+		return nil, errors.New(resData.ErrorMessage)
+	}
+	newPrice, _ := strconv.ParseFloat(resData.Price, 64)
+	newSize, _ := strconv.ParseFloat(resData.Quantity, 64)
+
+	return &order.Order{
+		ID: id.NewID(lq.name, symbol, fmt.Sprint(resData.ID)),
+		Request: order.Request{
+			Norm: base.Norm{
+				Price: newPrice,
+				Size:  newSize,
+			},
+			Symbol:    symbol,
+			IsBuy:     resData.Side == "buy",
+			OrderType: resData.OrderType,
+		},
+	}, nil
+}
+
 func (lq *liquid) CancelOrder(symbol, localID string) error {
 
 	_, err := lq.putRequest("/orders/"+localID+"/cancel", nil)

@@ -121,6 +121,49 @@ func (bb *bybit) CreateOrder(price, size float64, isBuy bool, symbol, orderType 
 	}, nil
 }
 
+func (bb *bybit) EditOrder(symbol, localID string, price, size float64) (*order.Order, error) {
+	// リクエスト
+	type Req struct {
+		OrderID string `json:"order_id"`
+		Symbol  string `json:"symbol"`
+		Qty     string `json:"p_r_qty"`
+		Price   string `json:"p_r_price"`
+	}
+	res, err := bb.postRequest("/v2/private/order/replace", structToMap(&Req{
+		OrderID: localID,
+		Symbol:  symbol,
+		Qty:     fmt.Sprint(size),
+		Price:   fmt.Sprint(price),
+	}))
+	if err != nil {
+		return nil, err
+	}
+
+	// レスポンスの変換
+	type Res struct {
+		RetCode int    `json:"ret_code"`
+		RetMsg  string `json:"ret_msg"`
+		ExtCode string `json:"ext_code"`
+		Result  struct {
+			OrderID string `json:"order_id"`
+		} `json:"result"`
+		TimeNow          string `json:"time_now"`
+		RateLimitStatus  int    `json:"rate_limit_status"`
+		RateLimitResetMs int64  `json:"rate_limit_reset_ms"`
+		RateLimit        int    `json:"rate_limit"`
+	}
+	resData := Res{}
+	json.Unmarshal(res, &resData)
+	if resData.RetMsg != "ok" {
+		return nil, errors.New(resData.RetMsg + ":" + resData.ExtCode)
+	}
+
+	return &order.Order{
+		ID:      id.NewID(bb.name, symbol, resData.Result.OrderID),
+		Request: order.Request{},
+	}, nil
+}
+
 func (bb *bybit) CancelOrder(symbol, localID string) error {
 	type Req struct {
 		Symbol  string `json:"symbol"`

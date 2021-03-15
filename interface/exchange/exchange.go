@@ -37,6 +37,7 @@ type Exchange interface {
 
 	// private
 	CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error)
+	EditOrder(symbol, localID string, price, size float64) (*order.Order, error)
 	CancelOrder(symbol, localID string) error
 	CancelAllOrder(symbol string) error
 	ActiveOrders(symbol string) ([]order.Order, error)

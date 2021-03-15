@@ -107,6 +107,63 @@ func (ftx *ftx) CreateOrder(price, size float64, isBuy bool, symbol, orderType s
 	}, nil
 }
 
+func (fx *ftx) EditOrder(symbol, localID string, price, size float64) (*order.Order, error) {
+	// リクエスト
+	type Req struct {
+		Price float64 `json:"price"`
+		Size  float64 `json:"size"`
+	}
+	req := Req{
+		Price: price,
+		Size:  size,
+	}
+	res, err := fx.postRequest("/api/orders/"+localID+"/modify", req)
+	if err != nil {
+		return nil, err
+	}
+
+	// レスポンスの変換
+	type Res struct {
+		Success bool `json:"success"`
+		Result  struct {
+			CreatedAt     time.Time   `json:"createdAt"`
+			FilledSize    int         `json:"filledSize"`
+			Future        string      `json:"future"`
+			ID            int         `json:"id"`
+			Market        string      `json:"market"`
+			Price         float64     `json:"price"`
+			RemainingSize int         `json:"remainingSize"`
+			Side          string      `json:"side"`
+			Size          float64     `json:"size"`
+			Status        string      `json:"status"`
+			Type          string      `json:"type"`
+			ReduceOnly    bool        `json:"reduceOnly"`
+			Ioc           bool        `json:"ioc"`
+			PostOnly      bool        `json:"postOnly"`
+			ClientID      interface{} `json:"clientId"`
+		} `json:"result"`
+	}
+
+	resData := Res{}
+	json.Unmarshal(res, &resData)
+	if !resData.Success {
+		return nil, errors.New(fmt.Sprintf("edit order, error. param:%+v", req))
+	}
+
+	return &order.Order{
+		ID: id.NewID(fx.name, symbol, fmt.Sprint(resData.Result.ID)),
+		Request: order.Request{
+			Norm: base.Norm{
+				Price: resData.Result.Price,
+				Size:  resData.Result.Size,
+			},
+			Symbol:    symbol,
+			IsBuy:     resData.Result.Side == "buy",
+			OrderType: resData.Result.Type,
+		},
+	}, nil
+}
+
 func (ftx *ftx) CancelOrder(symbol, localID string) error {
 	_, err := ftx.deleteRequest("/api/orders/"+localID, nil)
 	return err

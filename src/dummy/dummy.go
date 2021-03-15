@@ -81,6 +81,34 @@ func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType 
 	}, nil
 }
 
+func (dm *dummy) EditOrder(symbol, localID string, price, size float64) (*order.Order, error) {
+	// キャンセル
+	canceled, isBuy := dm.cancelOrder(localID)
+
+	if !canceled {
+		return &order.Order{}, errors.New(fmt.Sprintf("order:%s not found.", localID))
+	}
+
+	// 新規作成
+	ord, err := dm.CreateOrder(price, size, isBuy, symbol, dm.OrderTypes().Limit)
+	if err != nil {
+		return nil, err
+	}
+
+	return &order.Order{
+		ID: ord.ID,
+		Request: order.Request{
+			Norm: base.Norm{
+				Price: price,
+				Size:  size - ord.FilledSize,
+			},
+			Symbol:    symbol,
+			IsBuy:     isBuy,
+			OrderType: dm.OrderTypes().Limit,
+		},
+	}, nil
+}
+
 func (dm *dummy) CancelOrder(symbol, localID string) error {
 	dm.cancelOrder(localID)
 	return nil
@@ -201,24 +229,35 @@ func (dm *dummy) addOrder(isBuy bool, ele boardElm) bool {
 	return executed
 }
 
-func (dm *dummy) cancelOrder(id string) {
+// returns canceled, isbuy
+func (dm *dummy) cancelOrder(id string) (bool, bool) {
 	newBuyReqs := []boardElm{}
 	newSellReqs := []boardElm{}
+
+	canceled := false
+	isBuy := false
 
 	for _, v := range dm.buyReqs {
 		if id != v.ID {
 			newBuyReqs = append(newBuyReqs, v)
+		} else {
+			canceled = true
+			isBuy = true
 		}
 	}
 
 	for _, v := range dm.sellReqs {
 		if id != v.ID {
 			newSellReqs = append(newSellReqs, v)
+		} else {
+			canceled = true
 		}
 	}
 
 	dm.buyReqs = newBuyReqs
 	dm.sellReqs = newSellReqs
+
+	return canceled, isBuy
 }
 
 func (dm *dummy) incrementalID() string {
