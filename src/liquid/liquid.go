@@ -479,22 +479,16 @@ func (lq *liquid) getRequest(path string, param interface{}) ([]byte, error) {
 }
 
 func (lq *liquid) putRequest(path string, param interface{}) ([]byte, error) {
+	u := url.URL{Scheme: "https", Host: lq.host, Path: path}
 	jsonParam, _ := json.Marshal(param)
-
-	query := ""
-	if param != nil {
-		query = structToQuery(param)
-	}
-
-	url := url.URL{Scheme: "https", Host: lq.host, Path: path, RawQuery: query}
 	req, _ := http.NewRequest(
 		"PUT",
-		url.String(),
+		u.String(),
 		bytes.NewBuffer(jsonParam),
 	)
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("X-Quoine-Auth", lq.makeSignature(path+"?"+query))
+	req.Header.Add("X-Quoine-Auth", lq.makeSignature(path))
 	req.Header.Add("X-Quoine-API-Version", "2")
 
 	return lq.request(req)
