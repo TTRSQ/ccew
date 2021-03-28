@@ -98,6 +98,10 @@ func (bf *bitflyer) CreateOrder(price, size float64, isBuy bool, symbol, orderTy
 	}, nil
 }
 
+func (bf *bitflyer) LiquidationOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
+	return nil, errors.New("EditOrder not supported.")
+}
+
 func (bf *bitflyer) CancelOrder(symbol, localID string) error {
 	type Req struct {
 		ProductCode            string `json:"product_code"`

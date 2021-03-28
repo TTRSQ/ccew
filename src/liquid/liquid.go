@@ -173,6 +173,10 @@ func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType
 	}, nil
 }
 
+func (lq *liquid) LiquidationOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
+	return nil, errors.New("EditOrder not supported.")
+}
+
 func (lq *liquid) EditOrder(symbol, localID string, price, size float64) (*order.Order, error) {
 	// リクエスト
 	type editParam struct {

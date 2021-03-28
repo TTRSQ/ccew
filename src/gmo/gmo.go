@@ -105,6 +105,47 @@ func (gmo *gmo) CreateOrder(price, size float64, isBuy bool, symbol, orderType s
 	}, nil
 }
 
+func (gmo *gmo) LiquidationOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
+	// リクエスト
+	type Req struct {
+		Symbol        string      `json:"symbol"`
+		Side          string      `json:"side"`
+		ExecutionType string      `json:"executionType"`
+		Price         interface{} `json:"price"`
+		Size          string      `json:"size"`
+	}
+	res, err := gmo.postRequest("/private/v1/closeBulkOrder", &Req{
+		Symbol:        symbol,
+		Side:          map[bool]string{true: "BUY", false: "SELL"}[isBuy],
+		ExecutionType: orderType,
+		Price:         map[bool]interface{}{true: fmt.Sprint(int(price + 0.5)), false: nil}[orderType == gmo.OrderTypes().Limit],
+		Size:          fmt.Sprint(size),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// レスポンスの変換
+	type Res struct {
+		Status       int       `json:"status"`
+		ID           string    `json:"data"`
+		Responsetime time.Time `json:"responsetime"`
+		Messages     []struct {
+			MessageCode   string `json:"message_code"`
+			MessageString string `json:"message_string"`
+		} `json:"messages"`
+	}
+	resData := Res{}
+	json.Unmarshal(res, &resData)
+	if resData.Status != 0 {
+		return nil, errors.New(fmt.Sprintf("%+v", resData.Messages))
+	}
+	return &order.Responce{
+		ID:         id.NewID(gmo.name, symbol, fmt.Sprint(resData.ID)),
+		FilledSize: 0,
+	}, nil
+}
+
 func (gmo *gmo) EditOrder(symbol, localID string, price, size float64) (*order.Order, error) {
 	// リクエスト
 	type Req struct {

@@ -121,6 +121,10 @@ func (bb *bybit) CreateOrder(price, size float64, isBuy bool, symbol, orderType 
 	}, nil
 }
 
+func (bb *bybit) LiquidationOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
+	return nil, errors.New("EditOrder not supported.")
+}
+
 func (bb *bybit) EditOrder(symbol, localID string, price, size float64) (*order.Order, error) {
 	// リクエスト
 	type Req struct {

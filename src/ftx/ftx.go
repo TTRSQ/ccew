@@ -107,6 +107,10 @@ func (ftx *ftx) CreateOrder(price, size float64, isBuy bool, symbol, orderType s
 	}, nil
 }
 
+func (fx *ftx) LiquidationOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
+	return nil, errors.New("EditOrder not supported.")
+}
+
 func (fx *ftx) EditOrder(symbol, localID string, price, size float64) (*order.Order, error) {
 	// リクエスト
 	type Req struct {
