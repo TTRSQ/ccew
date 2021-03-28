@@ -6,6 +6,7 @@ import (
 	"github.com/TTRSQ/ccew/src/bybit"
 	"github.com/TTRSQ/ccew/src/dummy"
 	"github.com/TTRSQ/ccew/src/ftx"
+	"github.com/TTRSQ/ccew/src/gmo"
 	"github.com/TTRSQ/ccew/src/liquid"
 )
 
@@ -32,6 +33,11 @@ func ByBit(key exchange.Key) (exchange.Exchange, error) {
 // Liquid .. SpecificParam additional_keys : [][]string{ [id, sec],[id, sec].. }
 func Liquid(key exchange.Key) (exchange.Exchange, error) {
 	return liquid.New(key)
+}
+
+// Gmo .. no SpecificParam.
+func Gmo(key exchange.Key) (exchange.Exchange, error) {
+	return gmo.New(key)
 }
 
 // Dummy .. no SpecificParam.
