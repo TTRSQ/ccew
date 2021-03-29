@@ -362,7 +362,14 @@ func (bb *bybit) Stocks(symbol string) (stock.Stock, error) {
 		size *= -1
 	}
 
-	return stock.Stock{Symbol: symbol, Size: size}, nil
+	stock := stock.Stock{Symbol: symbol, Summary: size}
+	if size > 0 {
+		stock.LongSize = size
+	} else {
+		stock.ShortSize = size
+	}
+
+	return stock, nil
 }
 
 func (bb *bybit) Balance() ([]base.Balance, error) {

@@ -156,7 +156,14 @@ func (dm *dummy) ActiveOrders(symbol string) ([]order.Order, error) {
 }
 
 func (dm *dummy) Stocks(symbol string) (stock.Stock, error) {
-	return stock.Stock{Symbol: symbol, Size: dm.stockSize}, nil
+
+	stock := stock.Stock{Symbol: symbol, Summary: dm.stockSize}
+	if dm.stockSize > 0 {
+		stock.LongSize = dm.stockSize
+	} else {
+		stock.ShortSize = dm.stockSize
+	}
+	return stock, nil
 }
 
 func (dm *dummy) Balance() ([]base.Balance, error) {

@@ -279,8 +279,14 @@ func (ftx *ftx) Stocks(symbol string) (stock.Stock, error) {
 	if exist {
 		size = val
 	}
+	stock := stock.Stock{Symbol: symbol, Summary: size}
+	if size > 0 {
+		stock.LongSize = size
+	} else {
+		stock.ShortSize = size
+	}
 
-	return stock.Stock{Symbol: symbol, Size: size}, nil
+	return stock, nil
 }
 
 func (ftx *ftx) Balance() ([]base.Balance, error) {

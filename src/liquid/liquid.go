@@ -371,9 +371,11 @@ func (lq *liquid) Stocks(symbol string) (stock.Stock, error) {
 	for _, data := range resData.Models {
 		size, _ := strconv.ParseFloat(data.OpenQuantity, 64)
 		if data.Side == "short" {
-			ret.Size -= size
+			ret.Summary -= size
+			ret.ShortSize += size
 		} else {
-			ret.Size += size
+			ret.Summary += size
+			ret.LongSize += size
 		}
 	}
 

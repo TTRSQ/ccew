@@ -334,9 +334,11 @@ func (gmo *gmo) Stocks(symbol string) (stock.Stock, error) {
 	for _, data := range resData.Data.List {
 		size, _ := strconv.ParseFloat(data.Size, 64)
 		if data.Side == "SELL" {
-			ret.Size -= size
+			ret.Summary -= size
+			ret.ShortSize += size
 		} else {
-			ret.Size += size
+			ret.Summary += size
+			ret.LongSize += size
 		}
 	}
 
