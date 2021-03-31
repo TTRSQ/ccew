@@ -119,7 +119,7 @@ func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType
 	}
 	var leverageLevel interface{}
 	if strings.HasPrefix(symbol, "FX_") {
-		leverageLevel = 4
+		leverageLevel = 2
 	}
 	res, err := lq.postRequest("/orders", &Req{
 		Order: o{
