@@ -185,6 +185,7 @@ func (dm *dummy) InScheduledMaintenance() bool {
 
 func (dm *dummy) UpdateLTP(lastTimePrice float64) error {
 	dm.ltp = lastTimePrice
+	dm.updateExecution()
 	return nil
 }
 
