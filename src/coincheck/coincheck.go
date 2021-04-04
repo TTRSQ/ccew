@@ -223,12 +223,12 @@ func (cc *coincheck) Balance() ([]base.Balance, error) {
 	if !resData.Success {
 		return nil, errors.New(resData.Error)
 	}
-
 	// 返却値の作成
 	jpySize, _ := strconv.ParseFloat(resData.Jpy, 64)
+	jpyReserved, _ := strconv.ParseFloat(resData.JpyReserved, 64)
 	ret := []base.Balance{{
 		CurrencyCode: "jpy",
-		Size:         jpySize,
+		Size:         jpySize + jpyReserved,
 	}}
 	btcSize, _ := strconv.ParseFloat(resData.Btc, 64)
 	ret = append(ret, base.Balance{
