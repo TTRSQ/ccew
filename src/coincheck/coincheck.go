@@ -231,9 +231,10 @@ func (cc *coincheck) Balance() ([]base.Balance, error) {
 		Size:         jpySize + jpyReserved,
 	}}
 	btcSize, _ := strconv.ParseFloat(resData.Btc, 64)
+	btcReserved, _ := strconv.ParseFloat(resData.BtcReserved, 64)
 	ret = append(ret, base.Balance{
 		CurrencyCode: "btc",
-		Size:         btcSize,
+		Size:         btcSize + btcReserved,
 	})
 
 	return ret, nil
