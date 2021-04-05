@@ -169,7 +169,7 @@ func (bf *bitflyer) ActiveOrders(symbol string) ([]order.Order, error) {
 	// 返却値の作成
 	ret := []order.Order{}
 	for _, data := range resData {
-		//log.Printf("%+v\n", data)
+		t, _ := time.Parse("2006-01-02T15:04:05", data.ChildOrderDate)
 		ret = append(ret, order.Order{
 			ID: id.NewID(bf.name, data.ProductCode, data.ChildOrderAcceptanceID),
 			Request: order.Request{
@@ -180,6 +180,7 @@ func (bf *bitflyer) ActiveOrders(symbol string) ([]order.Order, error) {
 					Size:  data.Size,
 				},
 			},
+			UpdatedAtUnix: int(t.Unix()),
 		})
 	}
 	return ret, nil

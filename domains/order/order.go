@@ -23,4 +23,5 @@ type Responce struct {
 type Order struct {
 	id.ID
 	Request
+	UpdatedAtUnix int
 }

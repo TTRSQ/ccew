@@ -187,6 +187,7 @@ func (cc *coincheck) ActiveOrders(symbol string) ([]order.Order, error) {
 					Size:  size,
 				},
 			},
+			UpdatedAtUnix: int(data.CreatedAt.Unix()),
 		})
 	}
 	return ret, nil

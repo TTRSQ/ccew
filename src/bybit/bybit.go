@@ -161,10 +161,11 @@ func (bb *bybit) EditOrder(symbol, localID string, price, size float64) (*order.
 	if resData.RetMsg != "ok" {
 		return nil, errors.New(resData.RetMsg + ":" + resData.ExtCode)
 	}
-
+	t, _ := strconv.ParseFloat(resData.TimeNow, 64)
 	return &order.Order{
-		ID:      id.NewID(bb.name, symbol, resData.Result.OrderID),
-		Request: order.Request{},
+		ID:            id.NewID(bb.name, symbol, resData.Result.OrderID),
+		Request:       order.Request{},
+		UpdatedAtUnix: int(t),
 	}, nil
 }
 
@@ -293,6 +294,7 @@ func (bb *bybit) ActiveOrders(symbol string) ([]order.Order, error) {
 				IsBuy:     v.Side == "Buy",
 				OrderType: v.OrderType,
 			},
+			UpdatedAtUnix: int(v.UpdatedAt.Unix()),
 		})
 	}
 

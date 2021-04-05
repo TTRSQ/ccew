@@ -239,6 +239,7 @@ func (lq *liquid) EditOrder(symbol, localID string, price, size float64) (*order
 			IsBuy:     resData.Side == "buy",
 			OrderType: resData.OrderType,
 		},
+		UpdatedAtUnix: resData.UpdatedAt,
 	}, nil
 }
 
@@ -312,6 +313,7 @@ func (lq *liquid) ActiveOrders(symbol string) ([]order.Order, error) {
 					Size:  size,
 				},
 			},
+			UpdatedAtUnix: data.UpdatedAt,
 		})
 	}
 	return ret, nil

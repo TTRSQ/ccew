@@ -165,6 +165,7 @@ func (fx *ftx) EditOrder(symbol, localID string, price, size float64) (*order.Or
 			IsBuy:     resData.Result.Side == "buy",
 			OrderType: resData.Result.Type,
 		},
+		UpdatedAtUnix: int(resData.Result.CreatedAt.Unix()),
 	}, nil
 }
 
@@ -233,6 +234,7 @@ func (ftx *ftx) ActiveOrders(symbol string) ([]order.Order, error) {
 					Size:  data.RemainingSize,
 				},
 			},
+			UpdatedAtUnix: int(data.CreatedAt.Unix()),
 		})
 	}
 	return ret, nil

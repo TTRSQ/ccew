@@ -280,6 +280,7 @@ func (gmo *gmo) ActiveOrders(symbol string) ([]order.Order, error) {
 					Size:  size,
 				},
 			},
+			UpdatedAtUnix: int(data.Timestamp.Unix()),
 		})
 	}
 	return ret, nil
