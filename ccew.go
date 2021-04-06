@@ -41,7 +41,7 @@ func CoinCheck(key exchange.Key) (exchange.Exchange, error) {
 	return coincheck.New(key)
 }
 
-// Gmo .. no SpecificParam.
+// Gmo .. SpecificParam proxyURL : *url.URL
 func Gmo(key exchange.Key) (exchange.Exchange, error) {
 	return gmo.New(key)
 }

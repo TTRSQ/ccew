@@ -34,6 +34,9 @@ type gmo struct {
 	key  keyStruct
 	host string
 	name string
+
+	proxyURL   *url.URL
+	httpClient *http.Client
 }
 
 // New return exchange obj.
@@ -48,6 +51,16 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 	gmo.key = keyStruct{
 		id:  key.APIKey,
 		sec: key.APISecKey,
+	}
+
+	if key.SpecificParam["proxyURL"] != nil {
+		gmo.httpClient = &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyURL(key.SpecificParam["proxyURL"].(*url.URL)),
+			},
+		}
+	} else {
+		gmo.httpClient = new(http.Client)
 	}
 
 	return &gmo, nil
@@ -544,8 +557,7 @@ func (gmo *gmo) addSignature(req *http.Request, method, path string, param inter
 }
 
 func (gmo *gmo) request(req *http.Request) ([]byte, error) {
-	client := new(http.Client)
-	resp, err := client.Do(req)
+	resp, err := gmo.httpClient.Do(req)
 
 	if err != nil {
 		log.Fatalf("err ==> %+v\nreq ==> %v\n", err, req)
