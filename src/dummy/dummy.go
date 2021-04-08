@@ -167,13 +167,19 @@ func (dm *dummy) Stocks(symbol string) (stock.Stock, error) {
 }
 
 func (dm *dummy) Balance() ([]base.Balance, error) {
-	ret := []base.Balance{{
-		CurrencyCode: "fiat",
-		Size:         dm.cash + dm.stockSize*dm.ltp,
-	}, {
-		CurrencyCode: "crypto",
-		Size:         dm.stockSize,
-	}}
+	ret := []base.Balance{
+		{
+			CurrencyCode: "all",
+			Size:         dm.cash + dm.stockSize*dm.ltp,
+		},
+		{
+			CurrencyCode: "fiat",
+			Size:         dm.cash,
+		}, {
+			CurrencyCode: "crypto",
+			Size:         dm.stockSize,
+		},
+	}
 
 	return ret, nil
 }
