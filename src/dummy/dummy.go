@@ -170,6 +170,9 @@ func (dm *dummy) Balance() ([]base.Balance, error) {
 	ret := []base.Balance{{
 		CurrencyCode: "fiat",
 		Size:         dm.cash + dm.stockSize*dm.ltp,
+	}, {
+		CurrencyCode: "crypto",
+		Size:         dm.stockSize,
 	}}
 
 	return ret, nil
