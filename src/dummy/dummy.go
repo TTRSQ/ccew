@@ -22,6 +22,8 @@ type dummy struct {
 	incID     int
 	ltp       float64
 	cash      float64
+	takerFee  float64
+	makerFee  float64
 }
 
 type boardElm struct {
@@ -37,6 +39,12 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 	dm.host = "ttrsq.com"
 	dm.buyReqs = []boardElm{}
 	dm.sellReqs = []boardElm{}
+	if key.SpecificParam["makerFee"] != nil {
+		dm.makerFee = key.SpecificParam["makerFee"].(float64)
+	}
+	if key.SpecificParam["takerFee"] != nil {
+		dm.takerFee = key.SpecificParam["takerFee"].(float64)
+	}
 
 	return &dm, nil
 }
@@ -67,10 +75,10 @@ func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType 
 	if executed {
 		if isBuy {
 			dm.stockSize += size
-			dm.cash -= price * size
+			dm.cash -= price * size * (1.0 + dm.takerFee)
 		} else {
 			dm.stockSize -= size
-			dm.cash += price * size
+			dm.cash += price * size * (1.0 - dm.takerFee)
 		}
 	}
 
@@ -204,7 +212,7 @@ func (dm *dummy) updateExecution() {
 		if dm.ltp < v.Price {
 			executedIDs = append(executedIDs, v.ID)
 			dm.stockSize += v.Size
-			dm.cash -= v.Price * v.Size
+			dm.cash -= v.Price * v.Size * (1.0 + dm.makerFee)
 		}
 	}
 
@@ -212,7 +220,7 @@ func (dm *dummy) updateExecution() {
 		if dm.ltp > v.Price {
 			executedIDs = append(executedIDs, v.ID)
 			dm.stockSize -= v.Size
-			dm.cash += v.Price * v.Size
+			dm.cash += v.Price * v.Size * (1.0 - dm.makerFee)
 		}
 	}
 
