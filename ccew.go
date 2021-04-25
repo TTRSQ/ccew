@@ -2,6 +2,7 @@ package ccew
 
 import (
 	"github.com/TTRSQ/ccew/interface/exchange"
+	"github.com/TTRSQ/ccew/src/bitbank"
 	"github.com/TTRSQ/ccew/src/bitflyer"
 	"github.com/TTRSQ/ccew/src/bybit"
 	"github.com/TTRSQ/ccew/src/coincheck"
@@ -29,6 +30,11 @@ func Ftx(key exchange.Key) (exchange.Exchange, error) {
 // ByBit .. no SpecificParam.
 func ByBit(key exchange.Key) (exchange.Exchange, error) {
 	return bybit.New(key)
+}
+
+// BitBank .. SpecificParam additional_keys : [][]string{ [id, sec],[id, sec].. }
+func BitBank(key exchange.Key) (exchange.Exchange, error) {
+	return bitbank.New(key)
 }
 
 // Liquid .. SpecificParam additional_keys : [][]string{ [id, sec],[id, sec].. }
