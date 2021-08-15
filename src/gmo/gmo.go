@@ -90,7 +90,7 @@ func (gmo *gmo) CreateOrder(price, size float64, isBuy bool, symbol, orderType s
 		Symbol:        symbol,
 		Side:          map[bool]string{true: "BUY", false: "SELL"}[isBuy],
 		ExecutionType: orderType,
-		Price:         map[bool]interface{}{true: fmt.Sprint(int(price + 0.5)), false: nil}[orderType == gmo.OrderTypes().Limit],
+		Price:         map[bool]interface{}{true: fmt.Sprint(price), false: nil}[orderType == gmo.OrderTypes().Limit],
 		Size:          fmt.Sprint(size),
 	})
 	if err != nil {
@@ -131,7 +131,7 @@ func (gmo *gmo) LiquidationOrder(price, size float64, isBuy bool, symbol, orderT
 		Symbol:        symbol,
 		Side:          map[bool]string{true: "BUY", false: "SELL"}[isBuy],
 		ExecutionType: orderType,
-		Price:         map[bool]interface{}{true: fmt.Sprint(int(price + 0.5)), false: nil}[orderType == gmo.OrderTypes().Limit],
+		Price:         map[bool]interface{}{true: fmt.Sprint(price), false: nil}[orderType == gmo.OrderTypes().Limit],
 		Size:          fmt.Sprint(size),
 	})
 	if err != nil {
@@ -169,7 +169,7 @@ func (gmo *gmo) EditOrder(symbol, localID string, price, size float64) (*order.O
 	idInt, _ := strconv.ParseInt(localID, 10, 64)
 	res, err := gmo.postRequest("/private/v1/changeOrder", &Req{
 		OrderID: int(idInt),
-		Price:   fmt.Sprint(int(price + 0.5)),
+		Price:   fmt.Sprint(price),
 	})
 	if err != nil {
 		return nil, err
