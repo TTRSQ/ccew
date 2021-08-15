@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -562,7 +561,8 @@ func (gmo *gmo) request(req *http.Request) ([]byte, error) {
 	resp, err := gmo.httpClients[idx].Do(req)
 
 	if err != nil {
-		log.Fatalf("err ==> %+v\nreq ==> %v\n", err, req)
+		errStr := fmt.Sprintf("err ==> %+v\nreq ==> %v\n", err, req)
+		return nil, errors.New(errStr)
 	}
 	if resp.StatusCode != 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
