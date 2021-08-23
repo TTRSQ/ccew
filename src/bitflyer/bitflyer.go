@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -28,6 +27,9 @@ type bitflyer struct {
 	apiSecKey string
 	host      string
 	name      string
+
+	proxyURL   *url.URL
+	httpClient *http.Client
 }
 
 // New return exchange obj.
@@ -41,6 +43,15 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 	}
 	bf.apiKey = key.APIKey
 	bf.apiSecKey = key.APISecKey
+
+	bf.httpClient = new(http.Client)
+	if key.SpecificParam["proxyURL"] != nil {
+		bf.httpClient = &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyURL(key.SpecificParam["proxyURL"].(*url.URL)),
+			},
+		}
+	}
 
 	return &bf, nil
 }
@@ -378,16 +389,15 @@ func (bf *bitflyer) makeHMAC(msg string) string {
 }
 
 func (bf *bitflyer) request(req *http.Request) ([]byte, error) {
-	client := new(http.Client)
-	resp, err := client.Do(req)
+	resp, err := bf.httpClient.Do(req)
 
 	if err != nil {
-		log.Fatalf("err ==> %+v\nreq ==> %v\n", err, req)
+		errStr := fmt.Sprintf("err ==> %+v\nreq ==> %v\n", err, req)
+		return nil, errors.New(errStr)
 	}
 	if resp.StatusCode != 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
-		errStr := ""
-		errStr += fmt.Sprintf("body ==> %s\n", string(body))
+		errStr := fmt.Sprintf("body ==> %s\n", string(body))
 		errStr += fmt.Sprintf("resp ==> %+v\nreq ==> %v\n", resp, req)
 		return nil, errors.New(errStr)
 	}
