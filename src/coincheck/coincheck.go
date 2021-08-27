@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -35,6 +34,9 @@ type coincheck struct {
 	host   string
 	name   string
 	keyIdx int
+
+	proxyURL   *url.URL
+	httpClient *http.Client
 }
 
 // New return exchange obj.
@@ -62,6 +64,15 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 				id:  additionalKeys[i][0],
 				sec: additionalKeys[i][1],
 			})
+		}
+	}
+
+	cc.httpClient = new(http.Client)
+	if key.SpecificParam["proxyURL"] != nil {
+		cc.httpClient = &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyURL(key.SpecificParam["proxyURL"].(*url.URL)),
+			},
 		}
 	}
 
@@ -392,11 +403,11 @@ func (cc *coincheck) getKey() keyStruct {
 }
 
 func (cc *coincheck) request(req *http.Request) ([]byte, error) {
-	client := new(http.Client)
-	resp, err := client.Do(req)
+	resp, err := cc.httpClient.Do(req)
 
 	if err != nil {
-		log.Fatalf("err ==> %+v\nreq ==> %v\n", err, req)
+		errStr := fmt.Sprintf("err ==> %+v\nreq ==> %v\n", err, req)
+		return nil, errors.New(errStr)
 	}
 	if resp.StatusCode != 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
