@@ -585,3 +585,7 @@ func (gmo *gmo) request(req *http.Request) ([]byte, error) {
 func (gmo *gmo) UpdateLTP(lastTimePrice float64) error {
 	return errors.New("not supported.")
 }
+
+func (gmo *gmo) UpdateBestPrice(bestAsk, bestBid float64) error {
+	return errors.New("not supported.")
+}

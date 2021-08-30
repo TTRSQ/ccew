@@ -596,3 +596,7 @@ func (bb *bybit) request(req *http.Request) ([]byte, error) {
 func (bb *bybit) UpdateLTP(lastTimePrice float64) error {
 	return errors.New("not supported.")
 }
+
+func (bb *bybit) UpdateBestPrice(bestAsk, bestBid float64) error {
+	return errors.New("not supported.")
+}

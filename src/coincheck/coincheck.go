@@ -426,3 +426,7 @@ func (cc *coincheck) request(req *http.Request) ([]byte, error) {
 func (cc *coincheck) UpdateLTP(lastTimePrice float64) error {
 	return errors.New("not supported.")
 }
+
+func (cc *coincheck) UpdateBestPrice(bestAsk, bestBid float64) error {
+	return errors.New("not supported.")
+}

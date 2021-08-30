@@ -430,3 +430,7 @@ func (bb *bitbank) request(req *http.Request) ([]byte, error) {
 func (bb *bitbank) UpdateLTP(lastTimePrice float64) error {
 	return errors.New("not supported.")
 }
+
+func (bb *bitbank) UpdateBestPrice(bestAsk, bestBid float64) error {
+	return errors.New("not supported.")
+}

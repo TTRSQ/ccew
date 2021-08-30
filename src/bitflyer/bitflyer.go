@@ -411,3 +411,7 @@ func (bf *bitflyer) request(req *http.Request) ([]byte, error) {
 func (bf *bitflyer) UpdateLTP(lastTimePrice float64) error {
 	return errors.New("not supported.")
 }
+
+func (bf *bitflyer) UpdateBestPrice(bestAsk, bestBid float64) error {
+	return errors.New("not supported.")
+}

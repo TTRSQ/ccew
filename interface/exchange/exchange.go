@@ -45,8 +45,9 @@ type Exchange interface {
 	Stocks(symbol string) (stock.Stock, error)
 	Balance() ([]base.Balance, error)
 
-	// for debug
+	// for backtest
 	UpdateLTP(ltp float64) error
+	UpdateBestPrice(bestAsk, bestBid float64) error
 }
 
 // Stream socketを起動し受け取る

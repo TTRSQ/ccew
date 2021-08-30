@@ -24,6 +24,8 @@ type dummy struct {
 	cash      float64
 	takerFee  float64
 	makerFee  float64
+	bestAsk   float64
+	bestBid   float64
 }
 
 type boardElm struct {
@@ -39,6 +41,7 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 	dm.host = "ttrsq.com"
 	dm.buyReqs = []boardElm{}
 	dm.sellReqs = []boardElm{}
+	dm.bestAsk = 100000000
 	if key.SpecificParam["makerFee"] != nil {
 		dm.makerFee = key.SpecificParam["makerFee"].(float64)
 	}
@@ -90,7 +93,7 @@ func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType 
 }
 
 func (dm *dummy) LiquidationOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
-	return nil, errors.New("EditOrder not supported.")
+	return nil, errors.New("EditOrder not supported. ")
 }
 
 func (dm *dummy) EditOrder(symbol, localID string, price, size float64) (*order.Order, error) {
@@ -98,7 +101,7 @@ func (dm *dummy) EditOrder(symbol, localID string, price, size float64) (*order.
 	canceled, isBuy := dm.cancelOrder(localID)
 
 	if !canceled {
-		return &order.Order{}, errors.New(fmt.Sprintf("order:%s not found.", localID))
+		return &order.Order{}, fmt.Errorf("order:%s not found. ", localID)
 	}
 
 	// 新規作成
@@ -193,7 +196,7 @@ func (dm *dummy) Balance() ([]base.Balance, error) {
 }
 
 func (dm *dummy) Boards(symbol string) (board.Board, error) {
-	return board.Board{}, errors.New("not supported.")
+	return board.Board{}, errors.New("not supported. ")
 }
 
 func (dm *dummy) InScheduledMaintenance() bool {
@@ -203,6 +206,12 @@ func (dm *dummy) InScheduledMaintenance() bool {
 func (dm *dummy) UpdateLTP(lastTimePrice float64) error {
 	dm.ltp = lastTimePrice
 	dm.updateExecution()
+	return nil
+}
+
+func (dm *dummy) UpdateBestPrice(bestAsk, bestBid float64) error {
+	dm.bestAsk = bestAsk
+	dm.bestBid = bestBid
 	return nil
 }
 
@@ -233,8 +242,9 @@ func (dm *dummy) updateExecution() {
 func (dm *dummy) addOrder(isBuy bool, ele boardElm) bool {
 	executed := false
 	if isBuy {
-		if dm.ltp < ele.Price {
+		if dm.bestAsk < ele.Price {
 			executed = true
+			dm.bestAsk *= 1.1
 		} else {
 			dm.buyReqs = append(dm.buyReqs, ele)
 			if len(dm.buyReqs) > 1 {
@@ -244,8 +254,9 @@ func (dm *dummy) addOrder(isBuy bool, ele boardElm) bool {
 			}
 		}
 	} else {
-		if dm.ltp > ele.Price {
+		if dm.bestBid > ele.Price {
 			executed = true
+			dm.bestBid /= 1.1
 		} else {
 			dm.sellReqs = append(dm.sellReqs, ele)
 			if len(dm.sellReqs) > 1 {

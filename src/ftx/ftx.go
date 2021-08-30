@@ -519,3 +519,7 @@ func (ftx *ftx) request(req *http.Request) ([]byte, error) {
 func (fx *ftx) UpdateLTP(lastTimePrice float64) error {
 	return errors.New("not supported.")
 }
+
+func (fx *ftx) UpdateBestPrice(bestAsk, bestBid float64) error {
+	return errors.New("not supported.")
+}
