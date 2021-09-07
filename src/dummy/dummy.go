@@ -172,7 +172,7 @@ func (dm *dummy) Stocks(symbol string) (stock.Stock, error) {
 	if dm.stockSize > 0 {
 		stock.LongSize = dm.stockSize
 	} else {
-		stock.ShortSize = dm.stockSize
+		stock.ShortSize = -dm.stockSize
 	}
 	return stock, nil
 }
