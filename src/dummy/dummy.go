@@ -65,6 +65,10 @@ func (dm *dummy) OrderTypes() exchange.OrderTypes {
 
 func (dm *dummy) CreateOrder(price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
 	localID := dm.incrementalID()
+	return dm.createOrderWithID(localID, price, size, isBuy, symbol, orderType)
+}
+
+func (dm *dummy) createOrderWithID(localID string, price, size float64, isBuy bool, symbol, orderType string) (*order.Responce, error) {
 	executed := false
 	if orderType == "LIMIT" {
 		executed = dm.addOrder(isBuy, boardElm{
@@ -105,7 +109,7 @@ func (dm *dummy) EditOrder(symbol, localID string, price, size float64) (*order.
 	}
 
 	// 新規作成
-	ord, err := dm.CreateOrder(price, size, isBuy, symbol, dm.OrderTypes().Limit)
+	ord, err := dm.createOrderWithID(localID, price, size, isBuy, symbol, dm.OrderTypes().Limit)
 	if err != nil {
 		return nil, err
 	}
