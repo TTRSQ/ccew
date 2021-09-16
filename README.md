@@ -1,6 +1,17 @@
 # ccew
 Crypto Currency Exchange Wrapper for Go.
 
+# Supporting exchanges
+- bitbank
+- bitflyer
+- bybit
+- coincheck
+- ftx
+- gmo
+- liquid
+- dummy
+  - for back test
+
 # Usage
 ```
 import (
