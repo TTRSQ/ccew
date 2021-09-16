@@ -61,6 +61,10 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 		}
 	}
 
+	if key.SpecificParam["timeoutMS"] != nil {
+		gmo.httpClient.Timeout = time.Duration(key.SpecificParam["timeoutMS"].(int))
+	}
+
 	return &gmo, nil
 }
 
