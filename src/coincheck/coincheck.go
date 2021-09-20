@@ -76,6 +76,10 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 		}
 	}
 
+	if key.SpecificParam["timeoutMS"] != nil {
+		cc.httpClient.Timeout = time.Duration(key.SpecificParam["timeoutMS"].(int)) * time.Millisecond
+	}
+
 	return &cc, nil
 }
 
