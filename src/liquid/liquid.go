@@ -29,10 +29,12 @@ type keyStruct struct {
 }
 
 type liquid struct {
-	keys   []keyStruct
-	host   string
-	name   string
-	keyIdx int
+	keys       []keyStruct
+	host       string
+	name       string
+	keyIdx     int
+	httpClient *http.Client
+	useNetOut  bool
 }
 
 var productIDMap map[string]int
@@ -89,6 +91,16 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 		}
 	}
 
+	lq.httpClient = new(http.Client)
+
+	if key.SpecificParam["timeoutMS"] != nil {
+		lq.httpClient.Timeout = time.Duration(key.SpecificParam["timeoutMS"].(int)) * time.Millisecond
+	}
+
+	if key.SpecificParam["useNetOut"] != nil {
+		lq.useNetOut = key.SpecificParam["useNetOut"].(bool)
+	}
+
 	return &lq, nil
 }
 
@@ -129,7 +141,7 @@ func (lq *liquid) CreateOrder(price, size float64, isBuy bool, symbol, orderType
 			Price:          map[bool]interface{}{true: price, false: nil}[orderType == lq.OrderTypes().Limit],
 			Quantity:       size,
 			LeverageLevel:  leverageLevel,
-			OrderDirection: "netout",
+			OrderDirection: map[bool]string{true: "netout", false: "two_direction"}[lq.useNetOut],
 		},
 	})
 	if err != nil {
@@ -574,8 +586,7 @@ func (lq *liquid) getKey() keyStruct {
 }
 
 func (lq *liquid) request(req *http.Request) ([]byte, error) {
-	client := new(http.Client)
-	resp, err := client.Do(req)
+	resp, err := lq.httpClient.Do(req)
 
 	if err != nil {
 		log.Fatalf("err ==> %+v\nreq ==> %v\n", err, req)
