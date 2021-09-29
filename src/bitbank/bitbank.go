@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -411,7 +410,8 @@ func (bb *bitbank) request(req *http.Request) ([]byte, error) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		log.Fatalf("err ==> %+v\nreq ==> %v\n", err, req)
+		errStr := fmt.Sprintf("err ==> %+v\nreq ==> %v\n", err, req)
+		return nil, errors.New(errStr)
 	}
 	if resp.StatusCode != 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
