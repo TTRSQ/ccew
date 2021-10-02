@@ -26,9 +26,10 @@ import (
 )
 
 type bybit struct {
-	name string
-	host string
-	key  exchange.Key
+	name       string
+	host       string
+	key        exchange.Key
+	httpClient *http.Client
 }
 
 // New return exchange obj.
@@ -41,6 +42,10 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 		return nil, errors.New("APIKey and APISecKey Required")
 	}
 	bb.key = key
+
+	if key.SpecificParam["timeoutMS"] != nil {
+		bb.httpClient.Timeout = time.Duration(key.SpecificParam["timeoutMS"].(int)) * time.Millisecond
+	}
 
 	return &bb, nil
 }
@@ -556,8 +561,7 @@ func structToMap(data interface{}) map[string]string {
 }
 
 func (bb *bybit) request(req *http.Request) ([]byte, error) {
-	client := new(http.Client)
-	resp, err := client.Do(req)
+	resp, err := bb.httpClient.Do(req)
 
 	if err != nil {
 		errStr := fmt.Sprintf("err ==> %+v\nreq ==> %v\n", err, req)
