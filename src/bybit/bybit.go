@@ -43,6 +43,7 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 	}
 	bb.key = key
 
+	bb.httpClient = new(http.Client)
 	if key.SpecificParam["timeoutMS"] != nil {
 		bb.httpClient.Timeout = time.Duration(key.SpecificParam["timeoutMS"].(int)) * time.Millisecond
 	}
