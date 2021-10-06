@@ -572,7 +572,7 @@ func (bb *bybit) request(req *http.Request) ([]byte, error) {
 		errStr := fmt.Sprintf("err ==> %+v\nreq ==> %v\n", err, req)
 		return nil, errors.New(errStr)
 	}
-	if resp.StatusCode%100 != 2 {
+	if resp.StatusCode/100 != 2 {
 		body, _ := ioutil.ReadAll(resp.Body)
 		errStr := fmt.Sprintf("code:%d\n", resp.StatusCode)
 		errStr += fmt.Sprintf("body ==> %s\n", string(body))
