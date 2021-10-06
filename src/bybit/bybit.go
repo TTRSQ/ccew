@@ -242,7 +242,7 @@ func (bb *bybit) ActiveOrders(symbol string) ([]order.Order, error) {
 	type Req struct {
 		Symbol string `json:"symbol"`
 	}
-	res, err := bb.postRequest("/v2/private/order/cancelAll", structToMap(&Req{
+	res, err := bb.postRequest("/v2/private/order/list", structToMap(&Req{
 		Symbol: symbol,
 	}))
 	if err != nil {
