@@ -241,10 +241,12 @@ func (bb *bybit) CancelAllOrder(symbol string) error {
 
 func (bb *bybit) ActiveOrders(symbol string) ([]order.Order, error) {
 	type Req struct {
-		Symbol string `json:"symbol"`
+		Symbol      string `json:"symbol"`
+		OrderStatus string `json:"order_status"`
 	}
 	res, err := bb.getRequest("/v2/private/order/list", structToMap(&Req{
-		Symbol: symbol,
+		Symbol:      symbol,
+		OrderStatus: "Created,New,PartiallyFilled", // 今後の取引に関わるもののみ
 	}))
 	if err != nil {
 		return []order.Order{}, err
