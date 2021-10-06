@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -366,15 +367,16 @@ func (bb *bybit) Stocks(symbol string) (stock.Stock, error) {
 	json.Unmarshal(res, &resData)
 
 	size := resData.Result.Size
+	sizeAbs := math.Abs(size)
 	if resData.Result.Side == "Sell" {
 		size *= -1
 	}
 
 	stock := stock.Stock{Symbol: symbol, Summary: size}
 	if size > 0 {
-		stock.LongSize = size
+		stock.LongSize = sizeAbs
 	} else {
-		stock.ShortSize = size
+		stock.ShortSize = sizeAbs
 	}
 
 	return stock, nil
