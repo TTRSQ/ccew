@@ -242,7 +242,7 @@ func (bb *bybit) ActiveOrders(symbol string) ([]order.Order, error) {
 	type Req struct {
 		Symbol string `json:"symbol"`
 	}
-	res, err := bb.postRequest("/v2/private/order/list", structToMap(&Req{
+	res, err := bb.getRequest("/v2/private/order/list", structToMap(&Req{
 		Symbol: symbol,
 	}))
 	if err != nil {
@@ -570,8 +570,10 @@ func (bb *bybit) request(req *http.Request) ([]byte, error) {
 	}
 	if resp.StatusCode != 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
-		log.Printf("body ==> %s\n", string(body))
-		log.Fatalf("resp ==> %+v\nreq ==> %v\n", resp, req)
+		errStr := ""
+		errStr += fmt.Sprintf("body ==> %s\n", string(body))
+		errStr += fmt.Sprintf("resp ==> %+v\nreq ==> %v\n", resp, req)
+		return nil, errors.New(errStr)
 	}
 
 	defer resp.Body.Close()
