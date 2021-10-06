@@ -165,7 +165,7 @@ func (bb *bybit) EditOrder(symbol, localID string, price, size float64) (*order.
 	}
 	resData := Res{}
 	json.Unmarshal(res, &resData)
-	if resData.RetMsg != "ok" {
+	if resData.RetMsg != "OK" {
 		return nil, errors.New(resData.RetMsg + ":" + resData.ExtCode)
 	}
 	t, _ := strconv.ParseFloat(resData.TimeNow, 64)
