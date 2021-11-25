@@ -14,24 +14,26 @@ import (
 )
 
 type dummy struct {
-	host      string
-	name      string
-	buyReqs   []boardElm
-	sellReqs  []boardElm
-	stockSize float64
-	incID     int
-	ltp       float64
-	cash      float64
-	takerFee  float64
-	makerFee  float64
-	bestAsk   float64
-	bestBid   float64
+	host       string
+	name       string
+	buyReqs    []boardElm
+	sellReqs   []boardElm
+	stockSize  float64
+	incID      int
+	ltp        float64
+	cash       float64
+	takerFee   float64
+	makerFee   float64
+	bestAsk    float64
+	bestBid    float64
+	limitDelay int
 }
 
 type boardElm struct {
-	ID    string
-	Price float64
-	Size  float64
+	ID       string
+	Price    float64
+	Size     float64
+	DelayCnt int
 }
 
 // New return exchange obj.
@@ -47,6 +49,9 @@ func New(key exchange.Key) (exchange.Exchange, error) {
 	}
 	if key.SpecificParam["takerFee"] != nil {
 		dm.takerFee = key.SpecificParam["takerFee"].(float64)
+	}
+	if key.SpecificParam["limitDelay"] != nil {
+		dm.limitDelay = key.SpecificParam["limitDelay"].(int)
 	}
 
 	return &dm, nil
@@ -221,20 +226,22 @@ func (dm *dummy) UpdateBestPrice(bestAsk, bestBid float64) error {
 
 func (dm *dummy) updateExecution() {
 	executedIDs := []string{}
-	for _, v := range dm.buyReqs {
-		if dm.ltp < v.Price {
+	for i, v := range dm.buyReqs {
+		if dm.ltp < v.Price && v.DelayCnt >= dm.limitDelay {
 			executedIDs = append(executedIDs, v.ID)
 			dm.stockSize += v.Size
 			dm.cash -= v.Price * v.Size * (1.0 + dm.makerFee)
 		}
+		dm.buyReqs[i].DelayCnt += 1
 	}
 
-	for _, v := range dm.sellReqs {
-		if dm.ltp > v.Price {
+	for i, v := range dm.sellReqs {
+		if dm.ltp > v.Price && v.DelayCnt >= dm.limitDelay {
 			executedIDs = append(executedIDs, v.ID)
 			dm.stockSize -= v.Size
 			dm.cash += v.Price * v.Size * (1.0 - dm.makerFee)
 		}
+		dm.sellReqs[i].DelayCnt += 1
 	}
 
 	// 不要になったオーダー削除
